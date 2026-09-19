@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Conference Registration</title>
+<meta name="theme-color" content="#2B46D4">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   THE ONLY LINE YOU EVER EDIT
+
+   Paste the /exec URL from:
+     Apps Script → Deploy → New deployment → Web app
+   Everything else — event name, categories, prices, bank details —
+   comes from the Google Sheet. Nothing here needs changing per event.
+   ═══════════════════════════════════════════════════════════════ */
+const API_URL = "https://script.google.com/macros/s/AKfycbzuXOOzdEVNdM9Lj5G18eFXFK0RU9yklZSFZ_rYFyGg_FEE8VaU0mu2B3cEbdqnjLZm/exec";
+</script>
+
+<style>
+:root{
+  --ink:#0B1524; --slate:#4A5B72; --mist:#8A9AAF; --line:#E2E8F0;
+  --bg:#F5F8FC; --card:#FFFFFF;
+  --brand:#2B46D4; --brand-dark:#1E2F9E; --brand-soft:#EEF1FE; --sky:#0E9DE5;
+  --grad:linear-gradient(130deg,#2B46D4,#0E9DE5);
+  --go:#10B981; --amber:#F59E0B; --red:#DC2626;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Plus Jakarta Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+     background:var(--bg);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased;
+     padding:20px 16px 60px}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
+:focus-visible{outline:3px solid var(--sky);outline-offset:2px}
+.wrap{max-width:640px;margin:0 auto}
+
+/* header */
+.head{background:var(--grad);color:#fff;border-radius:20px 20px 0 0;padding:28px 26px 24px}
+.head .kick{font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;opacity:.85;font-weight:700}
+.head h1{font-size:1.5rem;font-weight:800;letter-spacing:-.025em;line-height:1.2;margin:8px 0 8px}
+.head .meta{font-size:.88rem;opacity:.92}
+.card{background:var(--card);border-radius:0 0 20px 20px;padding:28px 26px 30px;
+      box-shadow:0 18px 44px -18px rgba(11,21,36,.28)}
+
+.eb{display:flex;gap:10px;align-items:flex-start;background:#FEF6E7;border:1px solid #F5D9A8;
+    border-radius:12px;padding:12px 14px;margin-bottom:22px;font-size:.88rem;color:#8A5A08}
+.eb b{color:#6B4405}
+
+h2{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mist);
+   font-weight:800;margin:26px 0 12px}
+h2:first-of-type{margin-top:0}
+
+.field{margin-bottom:15px}
+label{display:block;font-size:.85rem;font-weight:700;margin-bottom:6px}
+label .opt{font-weight:500;color:var(--mist)}
+input[type=text],input[type=email],input[type=tel],select{
+  width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:11px;
+  font:inherit;font-size:.96rem;background:#fff;color:var(--ink)}
+input:focus,select:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(43,70,212,.11)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:520px){.two{grid-template-columns:1fr}}
+.hp{position:absolute;left:-9999px}
+
+/* category options */
+.opts{display:flex;flex-direction:column;gap:9px}
+.opt-row{display:flex;align-items:center;gap:12px;padding:13px 15px;border:1.5px solid var(--line);
+         border-radius:12px;cursor:pointer;background:#fff;transition:border-color .15s,background .15s}
+.opt-row:hover{border-color:#C9D3F6}
+.opt-row.sel{border-color:var(--brand);background:var(--brand-soft)}
+.opt-row input{accent-color:var(--brand);width:18px;height:18px;flex:0 0 18px}
+.opt-row .txt{flex:1;min-width:0}
+.opt-row .nm{font-weight:700;font-size:.94rem}
+.opt-row .nt{font-size:.8rem;color:var(--mist)}
+.opt-row .pr{font-weight:800;font-size:.98rem;white-space:nowrap;text-align:right}
+.opt-row .was{display:block;font-size:.76rem;font-weight:500;color:var(--mist);text-decoration:line-through}
+
+/* total */
+.total{margin-top:24px;border:2px solid var(--brand);border-radius:14px;overflow:hidden}
+.total .line{display:flex;justify-content:space-between;padding:10px 16px;font-size:.9rem;color:var(--slate);
+             border-bottom:1px dashed var(--line)}
+.total .grand{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;
+              background:var(--brand-soft)}
+.total .grand span{font-weight:700}
+.total .grand b{font-size:1.4rem;font-weight:800;letter-spacing:-.02em;color:var(--brand-dark)}
+
+.btn{width:100%;margin-top:20px;padding:16px;border:none;border-radius:13px;background:var(--grad);
+     color:#fff;font-family:inherit;font-weight:700;font-size:1rem;cursor:pointer;
+     box-shadow:0 6px 18px rgba(43,70,212,.3)}
+.btn:hover{filter:brightness(1.07)}
+.btn:disabled{opacity:.6;cursor:not-allowed;filter:none}
+.msg{margin-top:13px;font-size:.9rem;font-weight:600;min-height:1.2em;text-align:center}
+.note{margin-top:16px;font-size:.82rem;color:var(--mist);text-align:center}
+
+/* states */
+.state{background:var(--card);border-radius:20px;padding:44px 28px;text-align:center;
+       box-shadow:0 18px 44px -18px rgba(11,21,36,.28)}
+.state h1{font-size:1.2rem;margin-bottom:10px}
+.state p{color:var(--slate);font-size:.94rem}
+
+/* success */
+.done .tick{width:62px;height:62px;border-radius:50%;background:var(--go);color:#fff;
+            display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 18px}
+.done h1{font-size:1.45rem;font-weight:800;letter-spacing:-.02em;margin-bottom:8px}
+.done .sub{color:var(--slate);font-size:.94rem;margin-bottom:24px}
+.refbox{background:var(--brand-soft);border:2px dashed var(--brand);border-radius:14px;
+        padding:18px;margin-bottom:20px}
+.refbox .lbl{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--brand-dark);font-weight:800}
+.refbox .ref{font-size:1.65rem;font-weight:800;letter-spacing:.1em;margin:6px 0 2px;color:var(--brand-dark)}
+.refbox .amt{font-size:1.05rem;font-weight:700}
+.pay{text-align:left;border:1.5px solid var(--line);border-radius:14px;padding:18px;margin-bottom:14px}
+.pay h3{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mist);font-weight:800;margin-bottom:10px}
+.pay .row{display:flex;justify-content:space-between;gap:12px;padding:7px 0;font-size:.92rem;
+          border-bottom:1px dashed var(--line)}
+.pay .row:last-child{border-bottom:none}
+.pay .row span:first-child{color:var(--slate)}
+.pay .row b{text-align:right;word-break:break-word}
+.paybtn{display:block;width:100%;padding:15px;border-radius:13px;background:var(--go);color:#fff;
+        font-weight:700;text-decoration:none;text-align:center;margin-bottom:14px}
+.warn{background:#FEF6E7;border:1px solid #F5D9A8;border-radius:12px;padding:13px 15px;
+      font-size:.87rem;color:#8A5A08;text-align:left;margin-bottom:14px}
+.foot{text-align:center;margin-top:22px;font-size:.78rem;color:var(--mist)}
+.foot a{color:var(--brand);text-decoration:none;font-weight:600}
+.hide{display:none}
+@media print{ body{background:#fff;padding:0} .btn,.paybtn{display:none} }
+</style>
+</head>
+<body>
+<div class="wrap" id="root">
+  <div class="state"><h1>Loading registration…</h1><p>One moment.</p></div>
+</div>
+
+<script>
+(function(){
+  var root = document.getElementById('root');
+  var cfg = null, sel = { cat:null, extras:{} };
+
+  function esc(s){
+    return String(s==null?'':s).replace(/[&<>"]/g,function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];
+    });
+  }
+  function money(n){
+    var sym = cfg && cfg.currency === 'NGN' ? '\u20A6'
+            : cfg && cfg.currency === 'USD' ? '$'
+            : cfg && cfg.currency === 'GBP' ? '\u00A3' : '';
+    var s = Number(n||0).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return sym ? sym + s : (cfg ? cfg.currency + ' ' + s : s);
+  }
+  function priceOf(c){
+    return (cfg.earlyBird && c.early !== null && c.early !== undefined) ? c.early : c.fee;
+  }
+  function state(html){ root.innerHTML = '<div class="state">' + html + '</div>'; }
+
+  /* ── load config ── */
+  if (!API_URL || API_URL.indexOf('PASTE') === 0){
+    state('<h1>Not configured yet</h1><p>The API URL has not been set in this page.</p>');
+    return;
+  }
+
+  fetch(API_URL + '?action=config')
+    .then(function(r){ return r.json(); })
+    .then(function(c){
+      if (!c || !c.ok) throw new Error();
+      cfg = c;
+      if (!c.open){
+        state('<h1>Registration is closed</h1><p>Registration for ' + esc(c.event) +
+              ' is not currently open. Please contact the organisers.</p>');
+        return;
+      }
+      draw();
+    })
+    .catch(function(){
+      state('<h1>Could not load registration</h1>' +
+            '<p>Please check your connection and reload the page. ' +
+            'If this continues, contact the organisers.</p>');
+    });
+
+  /* ── the form ── */
+  function draw(){
+    var cats = cfg.categories.map(function(c,i){
+      var p = priceOf(c), disc = (cfg.earlyBird && c.early !== null && c.early !== undefined && c.early < c.fee);
+      return '<label class="opt-row" data-cat="' + i + '">' +
+        '<input type="radio" name="category" value="' + esc(c.name) + '">' +
+        '<span class="txt"><span class="nm">' + esc(c.name) + '</span>' +
+        (c.notes ? '<span class="nt">' + esc(c.notes) + '</span>' : '') + '</span>' +
+        '<span class="pr">' + (disc ? '<span class="was">' + money(c.fee) + '</span>' : '') +
+        money(p) + '</span></label>';
+    }).join('');
+
+    var extras = cfg.extras.length ? (
+      '<h2>Optional extras</h2><div class="opts">' +
+      cfg.extras.map(function(x,i){
+        return '<label class="opt-row" data-extra="' + i + '">' +
+          '<input type="checkbox" name="extra" value="' + esc(x.name) + '">' +
+          '<span class="txt"><span class="nm">' + esc(x.name) + '</span>' +
+          (x.notes ? '<span class="nt">' + esc(x.notes) + '</span>' : '') + '</span>' +
+          '<span class="pr">+' + money(x.fee) + '</span></label>';
+      }).join('') + '</div>') : '';
+
+    root.innerHTML =
+      '<div class="head">' +
+        '<div class="kick">Delegate registration</div>' +
+        '<h1>' + esc(cfg.event) + '</h1>' +
+        '<div class="meta">' + esc(cfg.dates) + (cfg.venue ? ' &middot; ' + esc(cfg.venue) : '') + '</div>' +
+      '</div>' +
+      '<div class="card">' +
+        (cfg.earlyBird && cfg.earlyBirdEnds ?
+          '<div class="eb"><span>\u23F0</span><span><b>Early bird rates apply.</b> ' +
+          'These prices are available until ' + esc(cfg.earlyBirdEnds) + '.</span></div>' : '') +
+
+        '<h2>Your details</h2>' +
+        '<div class="field"><label for="f-name">Full name</label>' +
+          '<input id="f-name" type="text" autocomplete="name" placeholder="Dr Amina Yusuf"></div>' +
+        '<div class="field"><label for="f-inst">Institution / hospital</label>' +
+          '<input id="f-inst" type="text" autocomplete="organization" placeholder="University College Hospital, Ibadan"></div>' +
+        '<div class="two">' +
+          '<div class="field"><label for="f-email">Email</label>' +
+            '<input id="f-email" type="email" autocomplete="email" placeholder="you@example.com"></div>' +
+          '<div class="field"><label for="f-phone">Phone <span class="opt">(optional)</span></label>' +
+            '<input id="f-phone" type="tel" autocomplete="tel" placeholder="080..."></div>' +
+        '</div>' +
+        '<input class="hp" type="text" id="f-web" tabindex="-1" autocomplete="off" aria-hidden="true">' +
+
+        '<h2>Registration category</h2>' +
+        '<div class="opts">' + cats + '</div>' +
+        extras +
+
+        '<div class="total" id="total"></div>' +
+        '<button class="btn" id="go">Complete registration</button>' +
+        '<p class="msg" id="msg"></p>' +
+        '<p class="note">You will receive payment instructions by email. ' +
+          'Your delegate pass is sent once payment is confirmed.</p>' +
+      '</div>' +
+      '<p class="foot">Powered by <a href="https://confhub.ng">ConfHub.ng</a></p>';
+
+    root.addEventListener('change', onChange);
+    document.getElementById('go').addEventListener('click', submit);
+    renderTotal();
+  }
+
+  function onChange(e){
+    var t = e.target;
+    if (t.name === 'category'){
+      sel.cat = t.value;
+      Array.prototype.forEach.call(document.querySelectorAll('[data-cat]'), function(el){
+        el.className = 'opt-row' + (el.querySelector('input').checked ? ' sel' : '');
+      });
+    }
+    if (t.name === 'extra'){
+      sel.extras[t.value] = t.checked;
+      var row = t.closest('[data-extra]');
+      if (row) row.className = 'opt-row' + (t.checked ? ' sel' : '');
+    }
+    renderTotal();
+  }
+
+  function chosenExtras(){
+    return cfg.extras.filter(function(x){ return sel.extras[x.name]; });
+  }
+
+  function renderTotal(){
+    var box = document.getElementById('total');
+    if (!box) return;
+    var cat = cfg.categories.filter(function(c){ return c.name === sel.cat; })[0];
+    if (!cat){
+      box.innerHTML = '<div class="grand"><span>Choose a category above</span><b>' + money(0) + '</b></div>';
+      return;
+    }
+    var lines = '<div class="line"><span>' + esc(cat.name) + '</span><span>' + money(priceOf(cat)) + '</span></div>';
+    var total = priceOf(cat);
+    chosenExtras().forEach(function(x){
+      lines += '<div class="line"><span>' + esc(x.name) + '</span><span>' + money(x.fee) + '</span></div>';
+      total += x.fee;
+    });
+    box.innerHTML = lines + '<div class="grand"><span>Total due</span><b>' + money(total) + '</b></div>';
+  }
+
+  /* ── submit ── */
+  function submit(){
+    var btn = document.getElementById('go'), msg = document.getElementById('msg');
+    var v = function(id){ return document.getElementById(id).value.trim(); };
+    var name = v('f-name'), email = v('f-email');
+
+    msg.style.color = 'var(--red)';
+    if (!name){ msg.textContent = 'Please enter your full name.'; return; }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ msg.textContent = 'Please enter a valid email address.'; return; }
+    if (!sel.cat){ msg.textContent = 'Please choose a registration category.'; return; }
+
+    btn.disabled = true; btn.textContent = 'Registering…'; msg.textContent = '';
+
+    fetch(API_URL, {
+      method:'POST',
+      headers:{ 'Content-Type':'text/plain;charset=utf-8' },   // avoids a CORS preflight
+      body: JSON.stringify({
+        action:'register',
+        name:name, email:email,
+        institution: v('f-inst'), phone: v('f-phone'),
+        category: sel.cat,
+        extras: chosenExtras().map(function(x){ return x.name; }),
+        website: v('f-web')          // honeypot — bots fill this, people can't see it
+      })
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if (!res || !res.ok){
+        msg.style.color = 'var(--red)';
+        msg.textContent = (res && res.error) ? res.error : 'Something went wrong. Please try again.';
+        btn.disabled = false; btn.textContent = 'Complete registration';
+        return;
+      }
+      success(res, name);
+    })
+    .catch(function(){
+      msg.style.color = 'var(--red)';
+      msg.textContent = 'Could not reach the server. Check your connection and try again.';
+      btn.disabled = false; btn.textContent = 'Complete registration';
+    });
+  }
+
+  /* ── confirmation ── */
+  function success(res, name){
+    var pay = '';
+
+    if (res.paystack){
+      var url = res.paystack + (res.paystack.indexOf('?') === -1 ? '?' : '&') +
+                'reference=' + encodeURIComponent(res.ref);
+      pay += '<a class="paybtn" href="' + esc(url) + '" target="_blank" rel="noopener">' +
+             'Pay ' + esc(res.amountText) + ' online now</a>';
+    }
+
+    if (res.bank && res.bank.number){
+      pay += '<div class="pay"><h3>Or pay by bank transfer</h3>' +
+        (res.bank.name    ? '<div class="row"><span>Bank</span><b>' + esc(res.bank.name) + '</b></div>' : '') +
+        (res.bank.account ? '<div class="row"><span>Account name</span><b>' + esc(res.bank.account) + '</b></div>' : '') +
+        '<div class="row"><span>Account number</span><b class="mono">' + esc(res.bank.number) + '</b></div>' +
+        '<div class="row"><span>Amount</span><b>' + esc(res.amountText) + '</b></div>' +
+        '<div class="row"><span>Reference / narration</span><b class="mono">' + esc(res.ref) + '</b></div>' +
+        '</div>' +
+        '<div class="warn"><b>Important:</b> put <b class="mono">' + esc(res.ref) + '</b> as the ' +
+        'transfer reference or narration. Without it your payment cannot be matched to your registration.</div>';
+    }
+
+    root.innerHTML =
+      '<div class="state done">' +
+        '<div class="tick">\u2713</div>' +
+        '<h1>Registration received</h1>' +
+        '<p class="sub">Thank you, ' + esc(name) + '. We have emailed these details to you.</p>' +
+        '<div class="refbox">' +
+          '<div class="lbl">Your payment reference</div>' +
+          '<div class="ref mono">' + esc(res.ref) + '</div>' +
+          '<div class="amt">' + esc(res.amountText) + ' due</div>' +
+        '</div>' +
+        pay +
+        '<p class="sub" style="margin-top:18px">Once your payment is confirmed you will receive your ' +
+        'delegate pass and receipt by email. Bring the pass on your phone to the registration desk.</p>' +
+        '<p class="foot">Powered by <a href="https://confhub.ng">ConfHub.ng</a></p>' +
+      '</div>';
+    window.scrollTo(0,0);
+  }
+})();
+</script>
+</body>
+</html>
