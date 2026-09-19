@@ -156,6 +156,23 @@ input:focus,select:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0
   }
   function state(html){ root.innerHTML = '<div class="state">' + html + '</div>'; }
 
+  // Each association can set its own colour in the Sheet
+  function applyBrand(hex){
+    if (!/^#[0-9a-fA-F]{6}$/.test(String(hex||''))) return;
+    var r = parseInt(hex.substr(1,2),16), g = parseInt(hex.substr(3,2),16), b = parseInt(hex.substr(5,2),16);
+    var lighten = function(v){ return Math.min(255, Math.round(v + (255-v)*0.35)); };
+    var second = '#' + [lighten(r),lighten(g),lighten(b)]
+                        .map(function(v){ return ('0'+v.toString(16)).slice(-2); }).join('');
+    var root = document.documentElement;
+    root.style.setProperty('--brand', hex);
+    root.style.setProperty('--sky', second);
+    root.style.setProperty('--grad', 'linear-gradient(130deg,' + hex + ',' + second + ')');
+    root.style.setProperty('--brand-soft', 'rgba(' + r + ',' + g + ',' + b + ',0.08)');
+    root.style.setProperty('--brand-dark', hex);
+    var meta = document.querySelector('meta[name=theme-color]');
+    if (meta) meta.setAttribute('content', hex);
+  }
+
   /* ── load config ── */
   if (!API_URL || API_URL.indexOf('PASTE') === 0){
     state('<h1>Not configured yet</h1><p>The API URL has not been set in this page.</p>');
@@ -183,6 +200,7 @@ input:focus,select:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0
     })
     .then(function(c){
       cfg = c;
+      applyBrand(c.brand);
       if (!c.open){
         state('<h1>Registration is closed</h1><p>Registration for ' + esc(c.event) +
               ' is not currently open. Please contact the organisers.</p>');
