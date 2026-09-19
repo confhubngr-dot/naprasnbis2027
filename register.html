@@ -18,7 +18,7 @@
    Everything else — event name, categories, prices, bank details —
    comes from the Google Sheet. Nothing here needs changing per event.
    ═══════════════════════════════════════════════════════════════ */
-const API_URL = "https://script.google.com/macros/s/AKfycbzuXOOzdEVNdM9Lj5G18eFXFK0RU9yklZSFZ_rYFyGg_FEE8VaU0mu2B3cEbdqnjLZm/exec";
+const API_URL = "PASTE_YOUR_EXEC_URL_HERE";
 </script>
 
 <style>
@@ -348,15 +348,19 @@ input:focus,select:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0
   function success(res, name){
     var pay = '';
 
-    if (res.paystack){
-      var url = res.paystack + (res.paystack.indexOf('?') === -1 ? '?' : '&') +
-                'reference=' + encodeURIComponent(res.ref);
-      pay += '<a class="paybtn" href="' + esc(url) + '" target="_blank" rel="noopener">' +
+    // Checkout link created for this delegate, carrying their own reference
+    if (res.payUrl){
+      pay += '<a class="paybtn" href="' + esc(res.payUrl) + '">' +
+             'Pay ' + esc(res.amountText) + ' now by card</a>' +
+             '<p class="sub" style="margin:-4px 0 14px;font-size:.84rem">' +
+             'Your pass and receipt arrive within minutes of paying.</p>';
+    } else if (res.paystack){
+      pay += '<a class="paybtn" href="' + esc(res.paystack) + '" target="_blank" rel="noopener">' +
              'Pay ' + esc(res.amountText) + ' online now</a>';
     }
 
     if (res.bank && res.bank.number){
-      pay += '<div class="pay"><h3>Or pay by bank transfer</h3>' +
+      pay += '<div class="pay"><h3>' + (res.payUrl ? 'Or pay by bank transfer' : 'Pay by bank transfer') + '</h3>' +
         (res.bank.name    ? '<div class="row"><span>Bank</span><b>' + esc(res.bank.name) + '</b></div>' : '') +
         (res.bank.account ? '<div class="row"><span>Account name</span><b>' + esc(res.bank.account) + '</b></div>' : '') +
         '<div class="row"><span>Account number</span><b class="mono">' + esc(res.bank.number) + '</b></div>' +
