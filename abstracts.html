@@ -15,7 +15,7 @@
    Paste the /exec URL from Apps Script → Deploy → New deployment.
    Categories, word limit, deadline and themes all come from the Sheet.
    ═══════════════════════════════════════════════════════════════ */
-const API_URL = "https://script.google.com/macros/s/AKfycbzuXOOzdEVNdM9Lj5G18eFXFK0RU9yklZSFZ_rYFyGg_FEE8VaU0mu2B3cEbdqnjLZm/exec";
+const API_URL = "PASTE_YOUR_EXEC_URL_HERE";
 </script>
 
 <style>
@@ -108,6 +108,21 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand);
 .diag{margin-top:20px;padding:14px 16px;background:#FEF6E7;border:1px solid #F5D9A8;
       border-radius:12px;font-size:.82rem;color:#7A4E06;text-align:left;line-height:1.5}
 .hide{display:none}
+.already{background:#F8FAFD;border:1.5px solid var(--line);border-radius:14px;
+         padding:16px 18px;margin-bottom:20px}
+.already h3{font-size:.95rem;font-weight:800;margin-bottom:5px}
+.already p{font-size:.86rem;color:var(--slate);margin-bottom:0}
+.already .inner{margin-top:12px}
+.already input{margin-bottom:8px}
+.already button{width:100%;padding:11px;border:1.5px solid var(--line);border-radius:11px;
+                background:#fff;font-family:inherit;font-weight:700;font-size:.88rem;
+                color:var(--ink);cursor:pointer}
+.already button:hover{border-color:var(--brand);color:var(--brand)}
+.already .link{background:none;border:none;color:var(--brand);font-weight:700;
+               font-size:.86rem;cursor:pointer;padding:0;text-decoration:underline;width:auto}
+.newhdr{border-top:2px solid var(--line);margin:4px 0 20px;padding-top:18px}
+.newhdr h3{font-size:1.02rem;font-weight:800;margin-bottom:4px}
+.newhdr p{font-size:.86rem;color:var(--slate)}
 .logos{display:flex;gap:14px;justify-content:center;align-items:center;flex-wrap:wrap;margin-bottom:16px}
 .logos img{height:64px;width:auto;max-width:130px;object-fit:contain;
            background:#fff;border-radius:12px;padding:7px}
@@ -233,7 +248,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand);
 
   function wireLost(){
     var btn = document.getElementById('lostGo');
-    if (!btn) return;
+    if (!btn || btn.dataset.wired) return;
+    btn.dataset.wired = '1';
     btn.addEventListener('click', function(){
       var em = document.getElementById('lostEmail').value.trim();
       var m = document.getElementById('lostMsg');
@@ -394,6 +410,19 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand);
       '<div class="card">' +
         linkBar('abstracts') +
 
+        (editToken ? '' :
+          '<div class="already"><h3>Already submitted an abstract?</h3>' +
+          '<p>Use the link in your confirmation email to view or edit it \u2014 don\u2019t fill this form again. ' +
+          '<button type="button" class="link" id="lostOpen">Lost the link?</button></p>' +
+          '<div class="inner hide" id="lostInner">' +
+            '<input id="lostEmail" type="email" placeholder="The email you submitted with" autocomplete="email">' +
+            '<button type="button" id="lostGo">Email me my link</button>' +
+            '<p class="msg" id="lostMsg" style="text-align:left;margin-top:8px"></p>' +
+          '</div></div>' +
+
+          '<div class="newhdr"><h3>New submission</h3>' +
+          '<p>Fill in the form below only if this is a new abstract.</p></div>') +
+
         (editToken ? '<div class="banner info"><span>\u270E</span><span>You are editing <b>' +
           esc(e.absid) + '</b>. Changes are saved when you press the button at the bottom.</span></div>' : '') +
 
@@ -474,6 +503,14 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand);
     }) : [{ name:'', affs:[1], presenting:true }];
     if (!auths.some(function(a){ return a.presenting; })) auths[0].presenting = true;
     drawAffs();
+
+    var lo = $('lostOpen');
+    if (lo) lo.addEventListener('click', function(){
+      var box = $('lostInner');
+      box.className = box.className.indexOf('hide') !== -1 ? 'inner' : 'inner hide';
+      if (box.className === 'inner') $('lostEmail').focus();
+    });
+    wireLost();
 
     $('addAff').addEventListener('click', function(){ affs.push(''); drawAffs(); });
     $('addAuth').addEventListener('click', function(){
