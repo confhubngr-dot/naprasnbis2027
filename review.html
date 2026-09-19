@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Abstract Review</title>
+<meta name="theme-color" content="#2B46D4">
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   THE ONLY LINE YOU EVER EDIT
+   Paste the /exec URL for this event's Apps Script deployment.
+   ═══════════════════════════════════════════════════════════════ */
+const API_URL = "PASTE_YOUR_EXEC_URL_HERE";
+</script>
+
+<style>
+:root{
+  --ink:#0B1524; --slate:#4A5B72; --mist:#8A9AAF; --line:#E2E8F0;
+  --bg:#F5F8FC; --card:#FFFFFF;
+  --brand:#2B46D4; --brand-dark:#1E2F9E; --brand-soft:#EEF1FE; --sky:#0E9DE5;
+  --grad:linear-gradient(130deg,#2B46D4,#0E9DE5);
+  --go:#10B981; --amber:#F59E0B; --red:#DC2626;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Plus Jakarta Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+     background:var(--bg);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased;
+     padding:20px 16px 60px}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
+:focus-visible{outline:3px solid var(--sky);outline-offset:2px}
+.wrap{max-width:720px;margin:0 auto}
+
+.head{background:var(--grad);color:#fff;border-radius:20px;padding:24px 26px;margin-bottom:18px}
+.head .kick{font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;opacity:.85;font-weight:700}
+.head h1{font-size:1.3rem;font-weight:800;letter-spacing:-.025em;margin:7px 0 4px}
+.head .meta{font-size:.86rem;opacity:.92}
+.progress{margin-top:14px;background:rgba(255,255,255,.22);border-radius:999px;height:7px;overflow:hidden}
+.progress i{display:block;height:100%;background:#fff;width:0;transition:width .3s}
+.pnum{font-size:.8rem;opacity:.92;margin-top:7px}
+
+.blind{display:flex;gap:9px;align-items:flex-start;background:#FEF6E7;border:1px solid #F5D9A8;
+       border-radius:12px;padding:12px 14px;margin-bottom:18px;font-size:.85rem;color:#8A5A08}
+
+.item{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 22px;
+      margin-bottom:12px;box-shadow:0 1px 2px rgba(11,21,36,.04)}
+.item.done{opacity:.72}
+.itop{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:8px}
+.aid{font-family:"IBM Plex Mono",monospace;font-size:.78rem;color:var(--mist)}
+.tag{font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+     padding:4px 10px;border-radius:999px;white-space:nowrap}
+.tag.pend{background:#F1F5F9;color:var(--mist)}
+.tag.acc{background:rgba(16,185,129,.13);color:#07714E}
+.tag.rej{background:rgba(220,38,38,.1);color:#A81F1F}
+.item h2{font-size:1.06rem;font-weight:700;letter-spacing:-.015em;line-height:1.35;margin-bottom:8px}
+.cat{font-size:.82rem;color:var(--slate);margin-bottom:6px}
+.cat b{color:var(--ink)}
+.body{white-space:pre-line;font-size:.94rem;color:var(--ink);margin-top:14px;
+      padding-top:14px;border-top:1px solid var(--line)}
+.words{font-size:.78rem;color:var(--mist);margin-top:10px}
+
+.verdict{display:flex;gap:10px;margin-top:16px}
+.vb{flex:1;padding:14px;border-radius:12px;border:2px solid var(--line);background:#fff;
+    font-family:inherit;font-weight:800;font-size:.95rem;cursor:pointer;color:var(--slate)}
+.vb.acc:hover,.vb.acc.on{background:var(--go);border-color:var(--go);color:#fff}
+.vb.rej:hover,.vb.rej.on{background:var(--red);border-color:var(--red);color:#fff}
+.cmt{width:100%;margin-top:10px;padding:11px 13px;border:1.5px solid var(--line);border-radius:11px;
+     font:inherit;font-size:.92rem;min-height:64px;resize:vertical}
+.cmt:focus{outline:none;border-color:var(--brand)}
+.save{width:100%;margin-top:10px;padding:13px;border:none;border-radius:12px;background:var(--grad);
+      color:#fff;font-family:inherit;font-weight:700;font-size:.95rem;cursor:pointer}
+.save:disabled{opacity:.55;cursor:not-allowed}
+.msg{margin-top:9px;font-size:.86rem;font-weight:600;min-height:1.1em}
+.toggle{margin-top:12px;background:none;border:none;color:var(--brand);font-family:inherit;
+        font-weight:700;font-size:.86rem;cursor:pointer;padding:0}
+
+.state{background:var(--card);border-radius:20px;padding:44px 28px;text-align:center;
+       box-shadow:0 18px 44px -18px rgba(11,21,36,.28)}
+.state h1{font-size:1.25rem;margin-bottom:10px}
+.state p{color:var(--slate);font-size:.94rem}
+.diag{margin-top:20px;padding:14px 16px;background:#FEF6E7;border:1px solid #F5D9A8;
+      border-radius:12px;font-size:.82rem;color:#7A4E06;text-align:left;line-height:1.5}
+.foot{text-align:center;margin-top:22px;font-size:.78rem;color:var(--mist)}
+.foot a{color:var(--brand);text-decoration:none;font-weight:600}
+.filters{display:flex;gap:8px;margin-bottom:14px}
+.filters button{flex:1;padding:10px;border-radius:11px;border:1.5px solid var(--line);background:#fff;
+                font-family:inherit;font-weight:700;font-size:.86rem;color:var(--slate);cursor:pointer}
+.filters button.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.hide{display:none}
+.logos{display:flex;gap:14px;justify-content:center;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.logos img{height:58px;width:auto;max-width:120px;object-fit:contain;
+           background:#fff;border-radius:12px;padding:7px}
+@media(max-width:480px){.logos img{height:48px}}
+.themes{background:var(--card);border:1px solid var(--line);border-radius:14px;
+        padding:15px 18px;margin-bottom:14px;font-size:.87rem;color:var(--slate);line-height:1.55}
+.themes b{display:block;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;
+          color:var(--mist);font-weight:800;margin-bottom:6px}
+</style>
+</head>
+<body>
+<div class="wrap" id="root">
+  <div class="state"><h1>Loading your abstracts…</h1><p>One moment.</p></div>
+</div>
+
+<script>
+(function(){
+  var root = document.getElementById('root');
+  var data = null, token = location.hash.replace(/^#/,'').trim(), filter = 'todo';
+
+  function esc(s){
+    return String(s==null?'':s).replace(/[&<>"]/g,function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];
+    });
+  }
+  function $(id){ return document.getElementById(id); }
+  function state(html, diag){
+    root.innerHTML = '<div class="state">' + html +
+      (diag ? '<div class="diag"><b>For the organiser:</b><br>' + esc(diag) + '</div>' : '') + '</div>';
+  }
+  function applyBrand(hex){
+    if (!/^#[0-9a-fA-F]{6}$/.test(String(hex||''))) return;
+    var r=parseInt(hex.substr(1,2),16), g=parseInt(hex.substr(3,2),16), b=parseInt(hex.substr(5,2),16);
+    var li=function(v){ return Math.min(255, Math.round(v+(255-v)*0.35)); };
+    var second='#'+[li(r),li(g),li(b)].map(function(v){ return ('0'+v.toString(16)).slice(-2); }).join('');
+    var rt=document.documentElement;
+    rt.style.setProperty('--brand',hex); rt.style.setProperty('--sky',second);
+    rt.style.setProperty('--grad','linear-gradient(130deg,'+hex+','+second+')');
+    rt.style.setProperty('--brand-dark',hex);
+  }
+
+  if (!API_URL || API_URL.indexOf('PASTE') === 0){
+    state('<h1>Not configured yet</h1><p>The API URL has not been set in this page.</p>');
+    return;
+  }
+  if (!token){
+    state('<h1>No review link</h1><p>Please open the personal link from your invitation email. ' +
+          'It ends in a long code after a # symbol.</p>');
+    return;
+  }
+
+  fetch(API_URL + '?action=reviewqueue&token=' + encodeURIComponent(token))
+    .then(function(r){
+      return r.text().then(function(txt){
+        if (txt.indexOf('<') === 0) throw { detail:'The Apps Script deployment is not public. ' +
+          'Deploy \u2192 Manage deployments \u2192 pencil \u2192 Who has access: Anyone \u2192 Deploy.' };
+        var d; try { d = JSON.parse(txt); } catch(e){ throw { detail:'Server did not return valid data.' }; }
+        if (!d || !d.ok) throw { detail:(d && d.error) || 'Unknown problem.', soft:true };
+        return d;
+      });
+    })
+    .then(function(d){
+      data = d;
+      if (d.labels && d.labels.length === 2) LAB = d.labels;
+      applyBrand(d.brand);
+      draw();
+    })
+    .catch(function(err){
+      if (err && err.soft){
+        state('<h1>Link not recognised</h1><p>' + esc(err.detail) +
+              '</p><p style="margin-top:12px">Please use the exact link from your invitation email, ' +
+              'or contact the scientific committee.</p>');
+        return;
+      }
+      state('<h1>Could not load your abstracts</h1><p>Please contact the organisers.</p>',
+            (err && err.detail) || 'Could not reach the server.');
+    });
+
+  var LAB = ['Yes','No'];
+  function norm(v){
+    var t = String(v||'').trim().toUpperCase();
+    if (t === 'YES' || t === 'ACCEPT') return 'YES';
+    if (t === 'NO'  || t === 'REJECT') return 'NO';
+    return '';
+  }
+
+  function counts(){
+    var done = data.abstracts.filter(function(a){ return a.verdict; }).length;
+    return { done: done, total: data.abstracts.length };
+  }
+
+  function draw(){
+    var c = counts();
+    var pct = c.total ? Math.round(c.done / c.total * 100) : 0;
+    var isAdj = String(data.role||'').toLowerCase().indexOf('adjud') === 0;
+
+    if (!data.abstracts.length){
+      state('<h1>Nothing to review yet</h1><p>Thank you, ' + esc(data.reviewer) +
+            '. No abstracts have been assigned to you at the moment. ' +
+            'You will be emailed when they are.</p>');
+      return;
+    }
+
+    var logos = (data.logos && data.logos.length)
+      ? '<div class="logos">' + data.logos.map(function(u){
+          return '<img src="' + esc(u) + '" alt="" loading="lazy">';
+        }).join('') + '</div>' : '';
+
+    root.innerHTML =
+      logos +
+      '<div class="head">' +
+        '<div class="kick">' + (isAdj ? 'Adjudication' : 'Abstract review') + '</div>' +
+        '<h1>' + esc(data.event) + '</h1>' +
+        (data.dates ? '<div class="meta">' + esc(data.dates) +
+          (data.venue ? ' &middot; ' + esc(data.venue) : '') + '</div>' : '') +
+        '<div class="meta" style="margin-top:6px">Reviewing as ' + esc(data.reviewer) +
+          (data.due ? ' &middot; please complete by ' + esc(data.due) : '') + '</div>' +
+        '<div class="progress"><i style="width:' + pct + '%"></i></div>' +
+        '<div class="pnum">' + c.done + ' of ' + c.total + ' reviewed</div>' +
+      '</div>' +
+
+      (data.themes ? '<div class="themes"><b>Conference themes</b>' + esc(data.themes) + '</div>' : '') +
+
+      '<div class="blind"><span>\u{1F576}</span><span>Authors and institutions are hidden. ' +
+        'Judge the science only. If you recognise the work and feel conflicted, say so in the comment ' +
+        'and tell the committee.</span></div>' +
+
+      '<div class="filters">' +
+        '<button id="fTodo" class="' + (filter==='todo'?'on':'') + '">To review (' + (c.total-c.done) + ')</button>' +
+        '<button id="fDone" class="' + (filter==='done'?'on':'') + '">Done (' + c.done + ')</button>' +
+        '<button id="fAll" class="' + (filter==='all'?'on':'') + '">All</button>' +
+      '</div>' +
+
+      '<div id="list"></div>' +
+      '<p class="foot">Powered by <a href="https://confhub.ng">ConfHub.ng</a></p>';
+
+    $('fTodo').addEventListener('click', function(){ filter='todo'; draw(); });
+    $('fDone').addEventListener('click', function(){ filter='done'; draw(); });
+    $('fAll').addEventListener('click',  function(){ filter='all';  draw(); });
+    drawList();
+  }
+
+  function drawList(){
+    var list = $('list');
+    var rows = data.abstracts.filter(function(a){
+      if (filter === 'todo') return !a.verdict;
+      if (filter === 'done') return !!a.verdict;
+      return true;
+    });
+
+    if (!rows.length){
+      list.innerHTML = '<div class="item" style="text-align:center;color:var(--mist)">' +
+        (filter === 'todo' ? 'All done \u2014 thank you.' : 'Nothing here yet.') + '</div>';
+      return;
+    }
+
+    list.innerHTML = rows.map(function(a){
+      var i = data.abstracts.indexOf(a);
+      var v = norm(a.verdict);
+      var tag = v === 'YES' ? '<span class="tag acc">' + esc(LAB[0]) + '</span>'
+              : v === 'NO'  ? '<span class="tag rej">' + esc(LAB[1]) + '</span>'
+              : '<span class="tag pend">To review</span>';
+      return '<div class="item' + (v ? ' done' : '') + '" id="it' + i + '">' +
+        '<div class="itop"><span class="aid">' + esc(a.absid) + '</span>' + tag + '</div>' +
+        '<h2>' + esc(a.title) + '</h2>' +
+        '<div class="cat"><b>' + esc(a.category) + '</b>' +
+          (a.preference ? ' &middot; author prefers ' + esc(a.preference) : '') + '</div>' +
+        '<div class="body" id="b' + i + '">' + esc(a.text) + '</div>' +
+        '<div class="words">' + esc(a.words) + ' words</div>' +
+        '<div class="verdict">' +
+          '<button class="vb acc' + (v==='YES'?' on':'') + '" data-v="YES" data-i="' + i + '">' +
+            esc(LAB[0]) + '</button>' +
+          '<button class="vb rej' + (v==='NO'?' on':'') + '" data-v="NO" data-i="' + i + '">' +
+            esc(LAB[1]) + '</button>' +
+        '</div>' +
+        '<textarea class="cmt" id="c' + i + '" placeholder="Comment (optional, seen only by the committee)">' +
+          esc(a.comment||'') + '</textarea>' +
+        '<button class="save" id="s' + i + '" data-i="' + i + '">' +
+          (v ? 'Update review' : 'Save review') + '</button>' +
+        '<p class="msg" id="m' + i + '"></p>' +
+      '</div>';
+    }).join('');
+
+    list.querySelectorAll('.vb').forEach(function(b){
+      b.addEventListener('click', function(){
+        var i = this.dataset.i;
+        data.abstracts[i].pending = this.dataset.v;
+        document.querySelectorAll('[data-i="' + i + '"].vb').forEach(function(x){
+          x.className = 'vb ' + (x.dataset.v === 'YES' ? 'acc' : 'rej') +
+                        (x.dataset.v === b.dataset.v ? ' on' : '');
+        });
+      });
+    });
+    list.querySelectorAll('.save').forEach(function(b){
+      b.addEventListener('click', function(){ save(+this.dataset.i); });
+    });
+  }
+
+  function save(i){
+    var a = data.abstracts[i];
+    var verdict = a.pending || a.verdict;
+    var btn = $('s' + i), msg = $('m' + i);
+    if (!verdict){
+      msg.style.color = 'var(--red)';
+      msg.textContent = 'Tap ' + LAB[0] + ' or ' + LAB[1] + ' first.';
+      return;
+    }
+    btn.disabled = true; btn.textContent = 'Saving…'; msg.textContent = '';
+
+    fetch(API_URL, {
+      method:'POST',
+      headers:{ 'Content-Type':'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action:'submitreview', token:token, absid:a.absid,
+                             verdict:verdict, comment:$('c'+i).value })
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if (!res || !res.ok){
+        msg.style.color = 'var(--red)';
+        msg.textContent = (res && res.error) || 'Could not save. Please try again.';
+        btn.disabled = false; btn.textContent = 'Save review';
+        return;
+      }
+      a.verdict = verdict;
+      a.comment = $('c'+i).value;
+      delete a.pending;
+      draw();
+    })
+    .catch(function(){
+      msg.style.color = 'var(--red)';
+      msg.textContent = 'Could not reach the server. Check your connection.';
+      btn.disabled = false; btn.textContent = 'Save review';
+    });
+  }
+})();
+</script>
+</body>
+</html>

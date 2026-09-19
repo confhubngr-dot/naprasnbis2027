@@ -15,7 +15,7 @@
    Paste the /exec URL from Apps Script → Deploy → New deployment.
    Categories, word limit, deadline and themes all come from the Sheet.
    ═══════════════════════════════════════════════════════════════ */
-const API_URL = "https://script.google.com/macros/s/AKfycbzuXOOzdEVNdM9Lj5G18eFXFK0RU9yklZSFZ_rYFyGg_FEE8VaU0mu2B3cEbdqnjLZm/exec";
+const API_URL = "PASTE_YOUR_EXEC_URL_HERE";
 </script>
 
 <style>
@@ -108,6 +108,50 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand);
 .diag{margin-top:20px;padding:14px 16px;background:#FEF6E7;border:1px solid #F5D9A8;
       border-radius:12px;font-size:.82rem;color:#7A4E06;text-align:left;line-height:1.5}
 .hide{display:none}
+.logos{display:flex;gap:14px;justify-content:center;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.logos img{height:64px;width:auto;max-width:130px;object-fit:contain;
+           background:#fff;border-radius:12px;padding:7px}
+@media(max-width:480px){.logos img{height:52px}}
+
+.linkbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.linkbar a{flex:1 1 auto;min-width:140px;text-align:center;padding:11px 14px;border-radius:11px;
+           border:1.5px solid var(--line);background:#fff;color:var(--slate);
+           text-decoration:none;font-weight:700;font-size:.86rem}
+.linkbar a:hover{border-color:var(--brand);color:var(--brand)}
+.linkbar a.primary{background:var(--brand-soft);border-color:#C9D3F6;color:var(--brand-dark)}
+.crosscta{margin-top:18px;padding:18px;border:2px solid var(--brand);border-radius:14px;
+          background:var(--brand-soft);text-align:left}
+.crosscta h3{font-size:.95rem;font-weight:800;color:var(--brand-dark);margin-bottom:6px}
+.crosscta p{font-size:.87rem;color:var(--slate);margin-bottom:12px}
+.crosscta a{display:block;padding:13px;border-radius:11px;background:var(--grad);color:#fff;
+            text-align:center;text-decoration:none;font-weight:700;font-size:.94rem}
+
+.guide{font-size:.85rem;color:var(--slate);margin:-4px 0 12px}
+.addbtn{width:100%;padding:11px;border:1.5px dashed var(--line);border-radius:11px;background:#fff;
+        font-family:inherit;font-weight:700;font-size:.88rem;color:var(--brand);cursor:pointer;margin-bottom:6px}
+.addbtn:hover{border-color:var(--brand);background:var(--brand-soft)}
+.rowitem{display:flex;gap:8px;align-items:flex-start;margin-bottom:8px}
+.rownum{flex:0 0 26px;height:42px;display:flex;align-items:center;justify-content:center;
+        font-family:"IBM Plex Mono",monospace;font-weight:500;color:var(--mist);font-size:.9rem}
+.rowitem input{flex:1}
+.del{flex:0 0 38px;height:42px;border:1.5px solid var(--line);border-radius:10px;background:#fff;
+     color:var(--mist);font-size:1.1rem;cursor:pointer;line-height:1}
+.del:hover{border-color:#E5A3A3;color:#B03A3A}
+.authrow{border:1.5px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px;background:#fff}
+.authtop{display:flex;gap:8px;align-items:center}
+.authtop input{flex:1}
+.affpick{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;align-items:center}
+.affpick .lbl{font-size:.78rem;color:var(--mist);margin-right:2px}
+.chip{min-width:32px;height:30px;padding:0 9px;border:1.5px solid var(--line);border-radius:8px;
+      background:#fff;font-family:"IBM Plex Mono",monospace;font-size:.85rem;color:var(--slate);cursor:pointer}
+.chip.on{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:700}
+.presrow{display:flex;align-items:center;gap:8px;margin-top:9px;font-size:.84rem;color:var(--slate)}
+.presrow input{width:17px;height:17px;accent-color:var(--brand)}
+.preview{margin-top:10px;padding:13px 15px;background:#F8FAFD;border:1px solid var(--line);
+         border-radius:12px;font-size:.9rem;line-height:1.6}
+.preview .ttl{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mist);
+              font-weight:800;margin-bottom:6px}
+.preview .affs{font-size:.82rem;color:var(--slate);margin-top:8px;white-space:pre-line}
 .lost{margin-top:22px;padding:16px 18px;background:#F8FAFD;border:1px solid var(--line);
       border-radius:14px;text-align:left}
 .lost h3{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mist);
@@ -148,6 +192,31 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand);
       return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];
     });
   }
+
+  // Links to this event's other pages, all from the Sheet
+
+  function logoStrip(){
+    var L = (cfg && cfg.links && cfg.links.logos) || [];
+    if (!L.length) return '';
+    return '<div class="logos">' + L.map(function(u){
+      return '<img src="' + esc(u) + '" alt="" loading="lazy">';
+    }).join('') + '</div>';
+  }
+
+  function linkBar(current){
+    var L = (cfg && cfg.links) || {};
+    var out = [];
+    if (L.register && current !== 'register')
+      out.push('<a href="' + esc(L.register) + '"' + (L.registrationOpen ? ' class="primary"' : '') +
+               '>Register for the conference</a>');
+    if (L.abstracts && current !== 'abstracts')
+      out.push('<a href="' + esc(L.abstracts) + '"' + (L.abstractsOpen ? ' class="primary"' : '') +
+               '>Submit an abstract</a>');
+    if (L.app) out.push('<a href="' + esc(L.app) + '">Conference app</a>');
+    if (L.site) out.push('<a href="' + esc(L.site) + '">Association website</a>');
+    return out.length ? '<div class="linkbar">' + out.join('') + '</div>' : '';
+  }
+
   function state(html, withLost){
     root.innerHTML = '<div class="state">' + html +
       (withLost ? lostBlock() : '') + '</div>';
@@ -316,12 +385,14 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand);
       '<textarea id="f-ethics" style="min-height:76px">' + esc(e.ethics||'') + '</textarea></div>' : '';
 
     root.innerHTML =
+      logoStrip() +
       '<div class="head">' +
         '<div class="kick">' + (editToken ? 'Edit your abstract' : 'Call for abstracts') + '</div>' +
         '<h1>' + esc(cfg.event) + '</h1>' +
         '<div class="meta">' + esc(cfg.dates) + (cfg.venue ? ' &middot; ' + esc(cfg.venue) : '') + '</div>' +
       '</div>' +
       '<div class="card">' +
+        linkBar('abstracts') +
 
         (editToken ? '<div class="banner info"><span>\u270E</span><span>You are editing <b>' +
           esc(e.absid) + '</b>. Changes are saved when you press the button at the bottom.</span></div>' : '') +
@@ -332,9 +403,20 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand);
 
         (cfg.themes ? '<div class="themes"><b>Conference themes</b>' + esc(cfg.themes) + '</div>' : '') +
 
-        '<h2>Presenting author</h2>' +
-        '<div class="field"><label for="f-author">Full name</label>' +
-          '<input id="f-author" type="text" autocomplete="name" value="' + esc(e.author||'') + '"></div>' +
+        '<h2>Institutions</h2>' +
+        '<p class="guide">List every institution involved. They are numbered automatically, ' +
+          'and you link each author to their institution(s) below.</p>' +
+        '<div id="affList"></div>' +
+        '<button type="button" class="addbtn" id="addAff">+ Add institution</button>' +
+
+        '<h2>Authors</h2>' +
+        '<p class="guide">Add authors in the order they should appear. Tap the numbers to link ' +
+          'each author to their institution(s). Mark who will present.</p>' +
+        '<div id="authList"></div>' +
+        '<button type="button" class="addbtn" id="addAuth">+ Add author</button>' +
+        '<div class="preview" id="authPreview"></div>' +
+
+        '<h2>Contact for this abstract</h2>' +
         '<div class="two">' +
           '<div class="field"><label for="f-email">Email</label>' +
             '<input id="f-email" type="email" autocomplete="email" value="' + esc(e.email||'') + '"' +
@@ -342,12 +424,6 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand);
           '<div class="field"><label for="f-phone">Phone <span class="opt">(optional)</span></label>' +
             '<input id="f-phone" type="tel" value="' + esc(e.phone||'') + '"></div>' +
         '</div>' +
-        '<div class="field"><label for="f-inst">Institution</label>' +
-          '<input id="f-inst" type="text" value="' + esc(e.institution||'') + '"></div>' +
-        (cfg.maxCoauthors ?
-          '<div class="field"><label for="f-co">Co-authors <span class="opt">(optional)</span>' +
-          '<span class="hint">Separate names with commas, in the order they should appear.</span></label>' +
-          '<textarea id="f-co" style="min-height:72px">' + esc(e.coauthors||'') + '</textarea></div>' : '') +
 
         '<h2>Abstract</h2>' +
         '<div class="field"><label for="f-title">Title</label>' +
@@ -392,6 +468,18 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand);
       });
     }
 
+    affs = (e.affiliations && e.affiliations.length) ? e.affiliations.slice() : [''];
+    auths = (e.authors && e.authors.length) ? e.authors.map(function(a){
+      return { name:a.name||'', affs:(a.affs||[]).slice(), presenting:!!a.presenting };
+    }) : [{ name:'', affs:[1], presenting:true }];
+    if (!auths.some(function(a){ return a.presenting; })) auths[0].presenting = true;
+    drawAffs();
+
+    $('addAff').addEventListener('click', function(){ affs.push(''); drawAffs(); });
+    $('addAuth').addEventListener('click', function(){
+      auths.push({ name:'', affs:[], presenting:false }); drawAuths();
+    });
+
     (cfg.sections || []).forEach(function(_, i){
       var el = $('f-s' + i);
       if (el) el.addEventListener('input', recount);
@@ -423,6 +511,102 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand);
       });
   }
 
+  /* ── Institutions and authors ─────────────────────────────── */
+  var affs = [], auths = [];
+  var SUPS = ['\u2070','\u00B9','\u00B2','\u00B3','\u2074','\u2075','\u2076','\u2077','\u2078','\u2079'];
+  function sup(n){ return String(n).split('').map(function(d){ return SUPS[+d] || d; }).join(''); }
+
+  function drawAffs(){
+    var box = $('affList');
+    box.innerHTML = affs.map(function(a, i){
+      return '<div class="rowitem">' +
+        '<span class="rownum">' + (i+1) + '.</span>' +
+        '<input type="text" data-aff="' + i + '" placeholder="Institution, city" value="' + esc(a) + '">' +
+        (affs.length > 1 ? '<button type="button" class="del" data-delaff="' + i + '">\u00D7</button>' : '') +
+        '</div>';
+    }).join('');
+    box.querySelectorAll('[data-aff]').forEach(function(el){
+      el.addEventListener('input', function(){ affs[+this.dataset.aff] = this.value; drawPreview(); });
+    });
+    box.querySelectorAll('[data-delaff]').forEach(function(el){
+      el.addEventListener('click', function(){
+        var n = +this.dataset.delaff;
+        affs.splice(n, 1);
+        // renumber every author's links so nothing points at a gap
+        auths.forEach(function(a){
+          a.affs = (a.affs||[]).filter(function(x){ return x !== n+1; })
+                               .map(function(x){ return x > n+1 ? x-1 : x; });
+        });
+        drawAffs(); drawAuths();
+      });
+    });
+    drawAuths();
+  }
+
+  function drawAuths(){
+    var box = $('authList');
+    box.innerHTML = auths.map(function(a, i){
+      var chips = affs.map(function(_, j){
+        var on = (a.affs||[]).indexOf(j+1) !== -1;
+        return '<button type="button" class="chip' + (on ? ' on' : '') +
+               '" data-auth="' + i + '" data-aff="' + (j+1) + '">' + (j+1) + '</button>';
+      }).join('');
+      return '<div class="authrow">' +
+        '<div class="authtop">' +
+          '<input type="text" data-name="' + i + '" placeholder="Author full name" value="' + esc(a.name||'') + '">' +
+          (auths.length > 1 ? '<button type="button" class="del" data-delauth="' + i + '">\u00D7</button>' : '') +
+        '</div>' +
+        '<div class="affpick"><span class="lbl">Institution:</span>' + chips + '</div>' +
+        '<label class="presrow"><input type="radio" name="presenting" data-pres="' + i + '"' +
+          (a.presenting ? ' checked' : '') + '> Presenting author</label>' +
+      '</div>';
+    }).join('');
+
+    box.querySelectorAll('[data-name]').forEach(function(el){
+      el.addEventListener('input', function(){ auths[+this.dataset.name].name = this.value; drawPreview(); });
+    });
+    box.querySelectorAll('.chip').forEach(function(el){
+      el.addEventListener('click', function(){
+        var a = auths[+this.dataset.auth], n = +this.dataset.aff;
+        a.affs = a.affs || [];
+        var at = a.affs.indexOf(n);
+        if (at === -1) a.affs.push(n); else a.affs.splice(at, 1);
+        a.affs.sort(function(x,y){ return x-y; });
+        drawAuths();
+      });
+    });
+    box.querySelectorAll('[data-delauth]').forEach(function(el){
+      el.addEventListener('click', function(){
+        var wasPres = auths[+this.dataset.delauth].presenting;
+        auths.splice(+this.dataset.delauth, 1);
+        if (wasPres && auths.length) auths[0].presenting = true;
+        drawAuths();
+      });
+    });
+    box.querySelectorAll('[data-pres]').forEach(function(el){
+      el.addEventListener('change', function(){
+        auths.forEach(function(a, i){ a.presenting = (i === +el.dataset.pres); });
+        drawPreview();
+      });
+    });
+    drawPreview();
+  }
+
+  function drawPreview(){
+    var box = $('authPreview');
+    if (!box) return;
+    var named = auths.filter(function(a){ return String(a.name||'').trim(); });
+    if (!named.length){ box.innerHTML = ''; return; }
+    var line = named.map(function(a){
+      var f = (a.affs||[]).filter(Boolean);
+      return esc(a.name.trim()) + (f.length ? f.map(sup).join(',') : '');
+    }).join(', ');
+    var affLines = affs.filter(function(x){ return String(x||'').trim(); })
+                       .map(function(x, i){ return (i+1) + '. ' + x.trim(); }).join('\n');
+    box.innerHTML = '<div class="ttl">How this will appear</div>' + line +
+                    (affLines ? '<div class="affs">' + esc(affLines) + '</div>' : '');
+  }
+
   function recount(){
     var total = 0;
     (cfg.sections || []).forEach(function(_, i){
@@ -451,15 +635,24 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand);
       token: editToken || '',
       title: v('f-title'), category: v('f-cat'), presentation: v('f-pres'),
       sections: (cfg.sections || []).map(function(_, i){ return v('f-s' + i); }),
-      author: v('f-author'), email: v('f-email'), phone: v('f-phone'),
-      institution: v('f-inst'), coauthors: v('f-co'),
+      email: v('f-email'), phone: v('f-phone'),
+      affiliations: affs.map(function(x){ return String(x||'').trim(); })
+                        .filter(function(x){ return x; }),
+      authors: auths.filter(function(a){ return String(a.name||'').trim(); })
+                    .map(function(a){ return { name:a.name.trim(), affs:a.affs||[], presenting:!!a.presenting }; }),
       ethics: v('f-ethics'), conflicts: v('f-conf'),
       website: v('f-web')
     };
 
     msg.style.color = 'var(--red)';
     if (!payload.title){ msg.textContent = 'Please enter a title.'; return; }
-    if (!payload.author){ msg.textContent = "Please enter the presenting author's name."; return; }
+    if (!payload.affiliations.length){ msg.textContent = 'Please add at least one institution.'; return; }
+    if (!payload.authors.length){ msg.textContent = 'Please add at least one author.'; return; }
+    var noAff = payload.authors.filter(function(a){ return !(a.affs||[]).length; });
+    if (noAff.length){ msg.textContent = 'Link ' + noAff[0].name + ' to an institution number.'; return; }
+    if (!payload.authors.some(function(a){ return a.presenting; })){
+      msg.textContent = 'Please mark which author will present.'; return;
+    }
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(payload.email)){ msg.textContent = 'Please enter a valid email address.'; return; }
     if (!payload.category){ msg.textContent = 'Please choose a category.'; return; }
     var total = payload.sections.reduce(function(a,x){ return a + words(x); }, 0);
@@ -508,7 +701,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand);
       '<div class="state done">' +
         '<div class="tick">\u2713</div>' +
         '<h1>Abstract received</h1>' +
-        '<p>Thank you, ' + esc(p.author) + '. A confirmation has been emailed to you.</p>' +
+        '<p>Thank you. A confirmation has been emailed to you.</p>' +
         '<div class="refbox">' +
           '<div class="lbl">Your abstract number</div>' +
           '<div class="ref mono">' + esc(res.absid) + '</div>' +
@@ -520,6 +713,10 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand);
           '<p style="font-size:.82rem;color:var(--mist);margin-top:8px">' +
           'This link is also in your email. Keep it \u2014 it is the only way back to your submission.</p></div>' : '') +
         '<p style="color:var(--slate);font-size:.92rem">You will be notified of the outcome after review.</p>' +
+        ((cfg.links && cfg.links.register) ?
+          '<div class="crosscta"><h3>Now register for the conference</h3>' +
+          '<p>Submitting an abstract is separate from registering. Presenting authors must be registered delegates.</p>' +
+          '<a href="' + esc(cfg.links.register) + '">Register now</a></div>' : '') +
         '<p class="foot">Powered by <a href="https://confhub.ng">ConfHub.ng</a></p>' +
       '</div>';
     window.scrollTo(0,0);
