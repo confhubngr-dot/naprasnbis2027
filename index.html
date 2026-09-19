@@ -3,7 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Conference</title>
+<!-- ═══════════════════════════════════════════════════════════════
+     EDIT THESE FIVE LINES FOR EACH EVENT
+
+     WhatsApp, Facebook and Google read these without running any
+     JavaScript, so they cannot come from the Sheet. They are what
+     shows when someone shares this link.
+     ═══════════════════════════════════════════════════════════════ -->
+<title>31st NAPRAS &amp; 20th NBIS Annual General Meeting</title>
+<meta property="og:title" content="31st NAPRAS &amp; 20th NBIS Annual General Meeting">
+<meta property="og:description" content="Register for the conference and submit your abstract. August 2027, Ibadan.">
+<meta property="og:image" content="https://naprasnbis2027.confhub.ng/napras-logo.png">
+<meta property="og:url" content="https://naprasnbis2027.confhub.ng">
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="description" content="Register for the conference and submit your abstract.">
 <meta name="theme-color" content="#2B46D4">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,7 +29,7 @@
    THE ONLY LINE YOU EVER EDIT
    Paste the /exec URL for this event's Apps Script deployment.
    ═══════════════════════════════════════════════════════════════ */
-const API_URL = "https://script.google.com/macros/s/AKfycbzuXOOzdEVNdM9Lj5G18eFXFK0RU9yklZSFZ_rYFyGg_FEE8VaU0mu2B3cEbdqnjLZm/exec";
+const API_URL = "PASTE_YOUR_EXEC_URL_HERE";
 </script>
 
 <style>
@@ -121,6 +136,7 @@ body{font-family:"Plus Jakarta Sans",-apple-system,BlinkMacSystemFont,"Segoe UI"
 
   function draw(c){
     applyBrand(c.brand);
+    if (c.event) document.title = c.event;
     var L = c.links || {};
     var logos = (L.logos && L.logos.length)
       ? '<div class="logos">' + L.logos.map(function(u){
