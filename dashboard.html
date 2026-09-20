@@ -15,7 +15,7 @@
    THE ONLY LINE YOU EVER EDIT
    Paste the /exec URL for this event's Apps Script deployment.
    ═══════════════════════════════════════════════════════════════ */
-const API_URL = "https://script.google.com/macros/s/AKfycbzuXOOzdEVNdM9Lj5G18eFXFK0RU9yklZSFZ_rYFyGg_FEE8VaU0mu2B3cEbdqnjLZm/exec";
+const API_URL = "PASTE_YOUR_EXEC_URL_HERE";
 </script>
 
 <style>
@@ -87,6 +87,10 @@ tr:last-child td{border-bottom:none}
 .pill.wait{background:#F1F5F9;color:var(--mist)}
 .pill.split{background:rgba(245,158,11,.16);color:#8A5A08}
 .muted{color:var(--mist)}
+.num{text-align:right}
+.xtra{font-size:.74rem;color:var(--brand)}
+.pill.early{background:rgba(43,70,212,.12);color:var(--brand-dark)}
+.pill.std{background:#F1F5F9;color:var(--slate)}
 .count{font-size:.8rem;color:var(--mist);margin-bottom:10px}
 
 .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
@@ -2427,6 +2431,32 @@ var qrcode = function() {
     });
   }
   function $(id){ return document.getElementById(id); }
+
+  // One date format across the platform: "Sun, 01.08.2027" and "14:30"
+  var DAYNM = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  function toDate(v){
+    if (v instanceof Date) return isNaN(v.getTime()) ? null : v;
+    var s = String(v||'').trim();
+    if (!s) return null;
+    var d = /^\d{4}-\d{2}-\d{2}$/.test(s) ? new Date(s + 'T12:00:00') : new Date(s);
+    return isNaN(d.getTime()) ? null : d;
+  }
+  function fmtDate(v){
+    var d = toDate(v);
+    if (!d) return String(v||'');
+    return DAYNM[d.getDay()] + ', ' + ('0'+d.getDate()).slice(-2) + '.' +
+           ('0'+(d.getMonth()+1)).slice(-2) + '.' + d.getFullYear();
+  }
+  function fmtTime(v){
+    var d = toDate(v);
+    if (!d) return '';
+    return ('0'+d.getHours()).slice(-2) + ':' + ('0'+d.getMinutes()).slice(-2);
+  }
+  function fmtDateTime(v){
+    var d = toDate(v);
+    return d ? fmtDate(d) + ' ' + fmtTime(d) : String(v||'');
+  }
+
   function money(n){
     var sym = D && D.currency === 'NGN' ? '\u20A6' : D && D.currency === 'USD' ? '$'
             : D && D.currency === 'GBP' ? '\u00A3' : '';
@@ -2572,14 +2602,21 @@ var qrcode = function() {
         '<input class="search" id="q" placeholder="Search name, institution or reference…" value="' + esc(q) + '">' +
         '<div class="count">' + rows.length + ' of ' + (D.delegates||[]).length + ' delegates</div>' +
         '<div class="tblwrap"><table><thead><tr>' +
-          '<th>Name</th><th>Institution</th><th>Category</th><th>Paid</th>' +
+          '<th>Name</th><th>Institution</th><th>Category</th><th>Rate</th>' +
+          '<th class="num">Amount</th><th>Paid</th>' +
           (has('contacts') ? '<th>Email</th><th>Phone</th>' : '') +
           '<th>Days</th></tr></thead><tbody>' +
         rows.map(function(d){
+          var rateCls = d.rate === 'Early bird' ? 'early' : d.rate === 'Standard' ? 'std' : '';
           return '<tr><td>' + esc(d.name) + '</td>' +
             '<td class="muted">' + esc(d.inst) + '</td>' +
-            '<td class="muted">' + esc(d.cat) + '</td>' +
-            '<td><span class="pill ' + (d.paid?'yes':'no') + '">' + (d.paid?'Paid':'Unpaid') + '</span></td>' +
+            '<td class="muted">' + esc(d.cat) +
+              (d.extras ? '<br><span class="xtra">+ ' + esc(d.extras) + '</span>' : '') + '</td>' +
+            '<td>' + (d.rate ? '<span class="pill ' + rateCls + '">' + esc(d.rate) + '</span>' : '<span class="muted">\u2014</span>') + '</td>' +
+            '<td class="num mono">' + money(d.amount) + '</td>' +
+            '<td><span class="pill ' + (d.paid?'yes':'no') + '">' + (d.paid?'Paid':'Unpaid') +
+              (d.paid && d.method ? '<br><span style="font-weight:500;opacity:.8">' + esc(d.method) + '</span>' : '') +
+              '</span></td>' +
             (has('contacts') ? '<td class="muted">' + esc(d.email) + '</td><td class="muted">' + esc(d.phone) + '</td>' : '') +
             '<td class="mono">' + (d.days || '\u2014') + '</td></tr>';
         }).join('') +
@@ -2605,10 +2642,16 @@ var qrcode = function() {
     if (tab === 'money'){
       var paid = (D.delegates||[]).filter(function(d){ return d.paid; });
       var unpaid = (D.delegates||[]).filter(function(d){ return !d.paid; });
+      var early = paid.filter(function(d){ return d.rate === 'Early bird'; });
+      var std = paid.filter(function(d){ return d.rate === 'Standard'; });
       b.innerHTML = '<div class="cards">' +
           kpi('Received', money(M.taken), paid.length + ' delegates', 'go') +
           kpi('Outstanding', money(M.due), unpaid.length + ' delegates', 'amber') +
           kpi('Expected', money(M.taken + M.due)) +
+          kpi('Early bird', early.length,
+              money(early.reduce(function(a,d){ return a + (Number(d.amount)||0); }, 0)), 'brand') +
+          kpi('Standard rate', std.length,
+              money(std.reduce(function(a,d){ return a + (Number(d.amount)||0); }, 0))) +
         '</div>' +
         (unpaid.length ? '<div class="panel"><h2>Awaiting payment</h2>' +
           '<div class="tblwrap"><table><thead><tr><th>Name</th><th>Institution</th>' +
@@ -2648,6 +2691,7 @@ var qrcode = function() {
           '<button id="csvA">Download CSV</button>' +
           '<button id="prA">Print list</button>' +
           '<button id="prAcc">Print accepted only</button>' +
+          '<button id="book">Abstract book</button>' +
         '</div></div>' +
         (A.byCategory ? barList(A.byCategory, 'Abstracts by category') : '');
       $('qa').addEventListener('input', function(){ q = this.value.trim().toLowerCase(); body(); $('qa').focus(); });
@@ -2655,6 +2699,7 @@ var qrcode = function() {
       $('prA').addEventListener('click', function(){ printAbstracts(arows, 'All abstracts'); });
       $('prAcc').addEventListener('click', function(){
         printAbstracts(arows.filter(function(a){ return a.decision === 'Accepted'; }), 'Accepted abstracts'); });
+      $('book').addEventListener('click', printBook);
       return;
     }
 
@@ -2684,7 +2729,7 @@ var qrcode = function() {
         (keys.length ? '<div class="panel"><h2>By day</h2>' + (function(){
           var max = Math.max.apply(null, keys.map(function(k){ return days[k]; }));
           return keys.map(function(k){
-            return '<div class="bar"><span class="nm">' + esc(k) + '</span>' +
+            return '<div class="bar"><span class="nm">' + esc(fmtDate(k)) + '</span>' +
               '<span class="tr"><i style="width:' + Math.round(days[k]/max*100) + '%"></i></span>' +
               '<span class="vv">' + days[k] + '</span></div>';
           }).join('');
@@ -2702,7 +2747,11 @@ var qrcode = function() {
       ? '<div class="ph-logos">' + D.logos.map(function(u){
           return '<img src="' + esc(u) + '">'; }).join('') + '</div>' : '';
     w.document.write(
-      '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + esc(title) + '</title><style>' +
+      '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + esc(title) + '</title>' +
+      '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' +
+      '<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&' +
+      'family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">' +
+      '<style>' +
       '*{box-sizing:border-box}' +
       'body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:#111;margin:0;padding:18mm 14mm}' +
       '.ph{text-align:center;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #333}' +
@@ -2713,12 +2762,13 @@ var qrcode = function() {
       css +
       '@media print{body{padding:10mm}.noprint{display:none}}' +
       '</style></head><body>' +
+      (title === 'Book of Abstracts' ? '' :
       '<div class="ph">' + logos +
         '<h1>' + esc(D.event) + '</h1>' +
         '<p>' + esc(D.dates) + (D.venue ? ' &middot; ' + esc(D.venue) : '') + '</p>' +
         '<div class="doc">' + esc(title) + '</div>' +
-        '<p>' + new Date().toLocaleString() + '</p>' +
-      '</div>' + bodyHtml +
+        '<p>' + fmtDateTime(new Date()) + '</p>' +
+      '</div>') + bodyHtml +
       '<script>setTimeout(function(){window.print();},700);<\/script>' +
       '</body></html>');
     w.document.close();
@@ -2737,11 +2787,13 @@ var qrcode = function() {
       '.sig{margin-top:30px;font-size:9pt;color:#555}' +
       '.sig div{margin-top:26px;border-top:1px solid #888;width:200px;padding-top:4px}';
     var body = '<table><thead><tr><th style="width:26px">#</th><th>Name</th><th>Institution</th>' +
-      '<th>Category</th>' + (showContacts ? '<th>Email</th><th>Phone</th>' : '') +
+      '<th>Category</th><th>Rate</th>' + (showContacts ? '<th>Email</th><th>Phone</th>' : '') +
       '<th>Ref</th><th class="n">Amount</th><th>Paid</th></tr></thead><tbody>' +
       rows.map(function(d,i){
         return '<tr><td>' + (i+1) + '</td><td>' + esc(d.name) + '</td>' +
-          '<td>' + esc(d.inst) + '</td><td>' + esc(d.cat) + '</td>' +
+          '<td>' + esc(d.inst) + '</td>' +
+          '<td>' + esc(d.cat) + (d.extras ? '<br><i style="font-size:8pt">+ ' + esc(d.extras) + '</i>' : '') + '</td>' +
+          '<td>' + esc(d.rate || '') + '</td>' +
           (showContacts ? '<td>' + esc(d.email) + '</td><td>' + esc(d.phone) + '</td>' : '') +
           '<td>' + esc(d.ref) + '</td><td class="n">' + money(d.amount) + '</td>' +
           '<td>' + (d.paid ? 'Yes' : 'No') + '</td></tr>';
@@ -2796,26 +2848,40 @@ var qrcode = function() {
     if ((mode === 'both' || mode === 'app') && !B.appUrl) mode = 'id';
     var missing = 0;
 
+    // Styled to match the delegate pass: gradient header, dark name, brand chip
+    var brand = (D.brand && /^#[0-9a-fA-F]{6}$/.test(D.brand)) ? D.brand : '#2B46D4';
+    var cr=parseInt(brand.substr(1,2),16), cg=parseInt(brand.substr(3,2),16), cb=parseInt(brand.substr(5,2),16);
+    var li=function(v){ return Math.min(255, Math.round(v+(255-v)*0.35)); };
+    var brand2='#'+[li(cr),li(cg),li(cb)].map(function(v){ return ('0'+v.toString(16)).slice(-2); }).join('');
+    var soft='rgba('+cr+','+cg+','+cb+',0.10)';
+
     var css =
-      '@page{size:A4;margin:8mm}' +
-      'body{padding:0}' +
-      '.sheet{display:grid;grid-template-columns:1fr 1fr;gap:0}' +
-      '.badge{width:97mm;height:66mm;border:1px dashed #bbb;padding:7mm 6mm;' +
-        'display:flex;flex-direction:column;page-break-inside:avoid;position:relative}' +
-      '.b-ev{font-size:7.5pt;letter-spacing:.09em;text-transform:uppercase;color:#555;font-weight:700}' +
-      '.b-main{display:flex;gap:5mm;align-items:center;flex:1;margin-top:3mm}' +
+      '@page{size:A4;margin:6mm}' +
+      'body{padding:0;font-family:"Plus Jakarta Sans",-apple-system,"Segoe UI",Roboto,Arial,sans-serif}' +
+      '.sheet{display:grid;grid-template-columns:1fr 1fr;gap:2mm}' +
+      '.badge{width:97mm;height:66mm;border-radius:4mm;overflow:hidden;background:#fff;' +
+        'display:flex;flex-direction:column;page-break-inside:avoid;border:.4pt solid #d8e0e8;' +
+        '-webkit-print-color-adjust:exact;print-color-adjust:exact}' +
+      '.b-hd{background:linear-gradient(130deg,' + brand + ',' + brand2 + ');color:#fff;' +
+        'padding:3.4mm 5mm 3mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}' +
+      '.b-ev{font-size:8pt;font-weight:800;line-height:1.2;letter-spacing:-.01em}' +
+      '.b-dt{font-size:6.5pt;opacity:.9;margin-top:.6mm}' +
+      '.b-body{flex:1;display:flex;gap:4mm;align-items:center;padding:3.5mm 5mm 2mm}' +
       '.b-txt{flex:1;min-width:0}' +
-      '.b-name{font-size:15pt;font-weight:800;line-height:1.15;letter-spacing:-.02em;' +
-        'word-wrap:break-word;margin-bottom:1.5mm}' +
-      '.b-inst{font-size:8.5pt;color:#444;line-height:1.3}' +
-      '.b-cat{display:inline-block;margin-top:2.5mm;font-size:7.5pt;font-weight:800;' +
-        'text-transform:uppercase;letter-spacing:.07em;border:1.2pt solid #111;padding:1mm 2.5mm;border-radius:2mm}' +
-      '.b-qr{flex:0 0 26mm;text-align:center}' +
-      '.b-qr svg{width:26mm;height:26mm;display:block}' +
-      '.b-qr .cap{font-size:6pt;color:#777;margin-top:1mm}' +
-      '.b-foot{font-size:6.5pt;color:#777;text-align:center;border-top:.5pt solid #ddd;padding-top:1.5mm}' +
+      '.b-lbl{font-size:5.8pt;letter-spacing:.16em;text-transform:uppercase;color:#8A9AAF;font-weight:800}' +
+      '.b-name{font-size:16pt;font-weight:800;line-height:1.1;letter-spacing:-.035em;color:#0B1524;' +
+        'word-wrap:break-word;margin:1mm 0 .8mm}' +
+      '.b-name.long{font-size:13pt}' +
+      '.b-inst{font-size:8pt;color:#4A5B72;line-height:1.3}' +
+      '.b-cat{display:inline-block;margin-top:2mm;font-size:6.5pt;font-weight:800;' +
+        'text-transform:uppercase;letter-spacing:.08em;background:' + soft + ';color:' + brand + ';' +
+        'padding:1.1mm 3mm;border-radius:99mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}' +
+      '.b-qr{flex:0 0 25mm;text-align:center}' +
+      '.b-qr svg{width:25mm;height:25mm;display:block;border:.4pt solid #e2e8f0;border-radius:2mm;padding:1mm}' +
+      '.b-id{font-family:"IBM Plex Mono",monospace;font-size:5.6pt;letter-spacing:.09em;color:#8A9AAF;margin-top:.8mm}' +
+      '.b-foot{font-size:6pt;color:#8A9AAF;text-align:center;padding:0 5mm 2.6mm}' +
       '.ph{display:none}' +
-      '@media screen{.sheet{max-width:200mm;margin:0 auto}}';
+      '@media screen{.sheet{max-width:204mm;margin:0 auto}}';
 
     var body = '<div class="sheet">' + rows.map(function(d){
       // "both": the app address with the delegate ID after the #. A phone
@@ -2825,26 +2891,28 @@ var qrcode = function() {
                  : mode === 'pass' ? d.pass
                  : d.id;
       if (!target || !d.id) missing++;
+      var longName = String(d.name||'').length > 26;
+      var foot = [];
+      if (B.appUrl) foot.push(B.appUrl.replace(/^https?:\/\//,'').replace(/\/+$/,''));
+      if (B.footer) foot.push(B.footer);
       return '<div class="badge">' +
-        '<div class="b-ev">' + esc(D.event) + '</div>' +
-        '<div class="b-main">' +
+        '<div class="b-hd">' +
+          '<div class="b-ev">' + esc(D.event) + '</div>' +
+          (D.dates ? '<div class="b-dt">' + esc(D.dates) +
+            (D.venue ? ' \u00b7 ' + esc(D.venue) : '') + '</div>' : '') +
+        '</div>' +
+        '<div class="b-body">' +
           '<div class="b-txt">' +
-            '<div class="b-name">' + esc(d.name) + '</div>' +
+            '<div class="b-lbl">Delegate</div>' +
+            '<div class="b-name' + (longName ? ' long' : '') + '">' + esc(d.name) + '</div>' +
             '<div class="b-inst">' + esc(d.inst) + '</div>' +
             (d.cat ? '<span class="b-cat">' + esc(d.cat) + '</span>' : '') +
           '</div>' +
-          '<div class="b-qr">' + (target ? qrSvg(target, 300) : '') +
-            '<div class="cap">' + (mode === 'app' ? 'Conference app'
-                                  : mode === 'both' ? 'Scan for the app'
-                                  : 'Scan at the desk') + '</div>' +
+          '<div class="b-qr">' + (target ? qrSvg(target, 320) : '') +
+            '<div class="b-id">' + esc(d.id || '') + '</div>' +
           '</div>' +
         '</div>' +
-        ((B.footer || (mode === 'id' && B.appUrl))
-          ? '<div class="b-foot">' +
-            (mode === 'id' && B.appUrl ? esc(B.appUrl.replace(/^https?:\/\//,'')) : '') +
-            (B.footer && mode === 'id' && B.appUrl ? ' &nbsp;&middot;&nbsp; ' : '') +
-            (B.footer ? esc(B.footer) : '') + '</div>'
-          : '') +
+        (foot.length ? '<div class="b-foot">' + esc(foot.join('  \u00b7  ')) + '</div>' : '') +
       '</div>';
     }).join('') + '</div>';
 
@@ -2853,16 +2921,132 @@ var qrcode = function() {
     openPrint('Delegate badges', css, body);
   }
 
+
+  /* ── Book of Abstracts: accepted only, in programme order ── */
+  function sessionRank(v){
+    var R = ['','I','II','III','IV','V','VI','VII','VIII','IX','X',
+             'XI','XII','XIII','XIV','XV','XVI','XVII','XVIII','XIX','XX'];
+    var i = R.indexOf(String(v||'').trim().toUpperCase());
+    return i > 0 ? i : 900;             // named sessions (posters) sort last
+  }
+  function sessionHeading(key){
+    var label = D.sessionLabel || 'Scientific Session';
+    var k = String(key||'').trim();
+    if (!k) return 'Unassigned';
+    return sessionRank(k) < 900 ? label + ' ' + k : k;
+  }
+
+  function printBook(){
+    var acc = (D.abstracts || []).filter(function(a){ return a.decision === 'Accepted'; });
+    if (!acc.length){
+      alert('No accepted abstracts yet. Run ConfHub \u2192 Update decisions in the spreadsheet first.');
+      return;
+    }
+    var unassigned = acc.filter(function(a){ return !String(a.session||'').trim(); }).length;
+    if (unassigned && !confirm(unassigned + ' accepted abstract(s) have no session yet and will be grouped ' +
+        'at the end.\n\nCarry on and print the book?')) return;
+
+    acc.sort(function(a,b){
+      var ra = sessionRank(a.session), rb = sessionRank(b.session);
+      if (ra !== rb) return ra - rb;
+      if (ra === 900 && a.session !== b.session) return a.session < b.session ? -1 : 1;
+      return (a.order||999) - (b.order||999);
+    });
+
+    var groups = [], seen = {};
+    acc.forEach(function(a){
+      var k = String(a.session||'').trim() || 'Unassigned';
+      if (!seen[k]){ seen[k] = []; groups.push(k); }
+      seen[k].push(a);
+    });
+
+    var fmtText = function(t){
+      return String(t||'').split(/\n\s*\n/).map(function(block){
+        var lines = block.split('\n');
+        if (lines.length > 1 && lines[0] === lines[0].toUpperCase() && lines[0].trim().length < 60)
+          return '<p><b>' + esc(lines[0].trim()) + '</b><br>' + esc(lines.slice(1).join('\n')) + '</p>';
+        return '<p>' + esc(block) + '</p>';
+      }).join('');
+    };
+
+    var toc = groups.map(function(k){
+      return '<div class="tocsec"><h3>' + esc(sessionHeading(k)) + '</h3><ol>' +
+        seen[k].map(function(a){
+          return '<li><span class="pn">' + esc(a.no || a.id) + '</span>' + esc(a.title) + '</li>';
+        }).join('') + '</ol></div>';
+    }).join('');
+
+    var bodyHtml = groups.map(function(k){
+      return '<section><h1 class="sess">' + esc(sessionHeading(k)) + '</h1>' +
+        seen[k].map(function(a){
+          return '<article>' +
+            '<div class="pnum">' + esc(a.no || a.id) + '</div>' +
+            '<h2>' + esc(a.title) + '</h2>' +
+            '<p class="auth">' + esc(a.authors || a.author) + '</p>' +
+            (a.affs ? '<p class="affs">' + esc(a.affs).replace(/\n/g,'<br>') + '</p>' : '') +
+            fmtText(a.text) +
+          '</article>';
+        }).join('') + '</section>';
+    }).join('');
+
+    var css =
+      '@page{size:A4;margin:18mm 16mm}' +
+      'body{font-family:Georgia,"Times New Roman",serif;padding:0}' +
+      '.cover{text-align:center;padding:60px 0 40px;page-break-after:always}' +
+      '.cover .lg{display:flex;gap:18px;justify-content:center;margin-bottom:26px}' +
+      '.cover .lg img{height:78px;width:auto;object-fit:contain}' +
+      '.cover h1{font-size:24pt;line-height:1.25;margin-bottom:10px}' +
+      '.cover p{font-size:11.5pt;color:#444;margin:3px 0}' +
+      '.cover .bk{font-size:14pt;margin-top:34px;letter-spacing:.22em;text-transform:uppercase;color:#666}' +
+      '.cover .ch{margin-top:60px;font-size:8.5pt;color:#888;letter-spacing:.06em}' +
+      '.toc{page-break-after:always}' +
+      '.toc h2{font-size:15pt;border-bottom:2px solid #333;padding-bottom:6px;margin-bottom:6px}' +
+      '.tocsec h3{font-size:10.5pt;margin:16px 0 5px;color:#333}' +
+      '.tocsec ol{list-style:none;padding-left:0;font-size:9.5pt}' +
+      '.tocsec li{margin-bottom:3px;color:#333;line-height:1.35}' +
+      '.pn{display:inline-block;min-width:56px;font-family:"Courier New",monospace;color:#666}' +
+      'section{page-break-before:always}' +
+      'h1.sess{font-size:15pt;border-bottom:2px solid #333;padding-bottom:6px;margin-bottom:16px}' +
+      'article{page-break-inside:avoid;margin-bottom:22px;padding-bottom:16px;border-bottom:1px solid #ddd}' +
+      '.pnum{font-family:"Courier New",monospace;font-size:9.5pt;color:#666;margin-bottom:3px}' +
+      'article h2{font-size:12pt;margin:0 0 5px;line-height:1.3}' +
+      '.auth{font-size:10pt;margin:0 0 2px}' +
+      '.affs{font-size:8.5pt;color:#555;margin:0 0 9px;font-style:italic;line-height:1.35}' +
+      'article p{font-size:9.5pt;margin:0 0 6px;text-align:justify;line-height:1.45}' +
+      '.ph{display:none}' +
+      '.bfoot{margin-top:40px;padding-top:10px;border-top:1px solid #ccc;text-align:center;' +
+        'font-size:8.5pt;color:#777;font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif}';
+
+    var logos = (D.logos && D.logos.length)
+      ? '<div class="lg">' + D.logos.map(function(u){ return '<img src="' + esc(u) + '">'; }).join('') + '</div>' : '';
+
+    var full =
+      '<div class="cover">' + logos +
+        '<h1>' + esc(D.event) + '</h1>' +
+        '<p>' + esc(D.dates) + '</p>' +
+        (D.venue ? '<p>' + esc(D.venue) + '</p>' : '') +
+        '<p class="bk">Book of Abstracts</p>' +
+        '<p class="ch">Powered by ConfHub.ng</p>' +
+      '</div>' +
+      '<div class="toc"><h2>Contents</h2>' + toc +
+        '<div class="bfoot">' + acc.length + ' abstracts \u00b7 ' + groups.length +
+        ' sessions \u00b7 Powered by ConfHub.ng</div></div>' +
+      bodyHtml +
+      '<div class="bfoot">Powered by ConfHub.ng</div>';
+
+    openPrint('Book of Abstracts', css, full);
+  }
+
   /* ── CSV export, done in the browser ── */
   function csv(which){
     var rows = [], name = '';
     if (which === 'delegates'){
       name = 'delegates';
-      var hdr = ['Name','Institution','Category','Paid','Reference','Amount','Days attended'];
-      if (has('contacts')) hdr = hdr.slice(0,4).concat(['Email','Phone'], hdr.slice(4));
+      var hdr = ['Name','Institution','Category','Extras','Rate','Paid','Method','Reference','Amount','Days attended'];
+      if (has('contacts')) hdr = hdr.slice(0,7).concat(['Email','Phone'], hdr.slice(7));
       rows.push(hdr);
       (D.delegates||[]).forEach(function(d){
-        var r = [d.name, d.inst, d.cat, d.paid?'Yes':'No'];
+        var r = [d.name, d.inst, d.cat, d.extras||'', d.rate||'', d.paid?'Yes':'No', d.method||''];
         if (has('contacts')) r = r.concat([d.email, d.phone]);
         rows.push(r.concat([d.ref, d.amount, d.days]));
       });
