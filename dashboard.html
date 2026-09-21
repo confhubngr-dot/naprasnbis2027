@@ -15,7 +15,7 @@
    THE ONLY LINE YOU EVER EDIT
    Paste the /exec URL for this event's Apps Script deployment.
    ═══════════════════════════════════════════════════════════════ */
-const API_URL = "https://script.google.com/macros/s/AKfycbzuXOOzdEVNdM9Lj5G18eFXFK0RU9yklZSFZ_rYFyGg_FEE8VaU0mu2B3cEbdqnjLZm/exec";
+const API_URL = "PASTE_YOUR_EXEC_URL_HERE";
 </script>
 
 <style>
@@ -2893,7 +2893,9 @@ var qrcode = function() {
       if (!target || !d.id) missing++;
       var longName = String(d.name||'').length > 26;
       var foot = [];
-      if (B.appUrl) foot.push(B.appUrl.replace(/^https?:\/\//,'').replace(/\/+$/,''));
+      // The app address is only printed when the QR does NOT already carry it.
+      if (B.appUrl && (mode === 'id' || mode === 'pass'))
+        foot.push(B.appUrl.replace(/^https?:\/\//,'').replace(/\/+$/,''));
       if (B.footer) foot.push(B.footer);
       return '<div class="badge">' +
         '<div class="b-hd">' +
