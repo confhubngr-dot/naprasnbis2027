@@ -30,7 +30,7 @@
    Paste the /exec URL from Apps Script → Deploy → New deployment.
    Categories, word limit, deadline and themes all come from the Sheet.
    ═══════════════════════════════════════════════════════════════ */
-const API_URL = "https://script.google.com/macros/s/AKfycbzuXOOzdEVNdM9Lj5G18eFXFK0RU9yklZSFZ_rYFyGg_FEE8VaU0mu2B3cEbdqnjLZm/exec";
+const API_URL = "PASTE_YOUR_EXEC_URL_HERE";
 </script>
 
 <style>
@@ -205,6 +205,172 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand);
 .restore h3{color:var(--brand-dark)}
 .restore button{border-color:#C9D3F6;color:var(--brand-dark)}
 .restore button:hover{background:var(--brand);color:#fff;border-color:var(--brand)}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CONGRESS MICROSITE SHELL
+   Identical in register.html and abstracts.html. Every piece hides
+   itself when its Sheet setting is blank, so a bare-bones event still
+   gets a clean page and a fully filled-in one gets the full microsite.
+   ═══════════════════════════════════════════════════════════════════ */
+body.shelled{padding:0}
+body.shelled .wrap{max-width:none}
+.bare{max-width:560px;margin:0 auto}
+/* a message framed by the shell rather than floating alone */
+.panel .notice{text-align:center;padding:14px 0 6px}
+.panel .notice h1{font-size:1.35rem;font-weight:800;letter-spacing:-.025em;margin-bottom:10px}
+.panel .notice p{color:var(--slate);font-size:.95rem;max-width:46ch;margin:0 auto}
+.site{min-height:100vh;display:flex;flex-direction:column}
+
+/* ── sticky masthead ── */
+.topbar{position:sticky;top:0;z-index:50}
+.mast{background:rgba(255,255,255,.96);
+      backdrop-filter:saturate(1.6) blur(12px);border-bottom:1px solid var(--line)}
+.mast .in{max-width:1120px;margin:0 auto;padding:11px 20px;
+          display:flex;align-items:center;gap:14px}
+.mast .marks{display:flex;align-items:center;gap:9px;flex:0 0 auto}
+.mast .marks img{height:38px;width:auto;max-width:74px;object-fit:contain}
+.mast .who{min-width:0;flex:1}
+.mast .who .nm{font-weight:800;font-size:.93rem;letter-spacing:-.015em;line-height:1.25;
+               overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mast .who .dt{font-size:.74rem;color:var(--mist);font-weight:600;
+               overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mast .act{flex:0 0 auto;display:flex;gap:8px}
+.mast .act a{padding:9px 15px;border-radius:9px;font-size:.82rem;font-weight:700;
+             text-decoration:none;white-space:nowrap}
+.mast .act a.ghost{color:var(--slate);border:1.5px solid var(--line);background:#fff}
+.mast .act a.ghost:hover{border-color:var(--brand);color:var(--brand)}
+.mast .act a.solid{background:var(--grad);color:#fff;box-shadow:0 4px 12px rgba(11,21,36,.16)}
+@media(max-width:860px){
+  .mast .act a.ghost{display:none}
+  .mast .in{padding:10px 16px;gap:11px}
+  .mast .marks img{height:32px;max-width:60px}
+}
+
+/* ── sub-navigation: the spine of the microsite ── */
+.subnav{background:var(--ink)}
+.subnav .in{max-width:1120px;margin:0 auto;display:flex;gap:2px;overflow-x:auto;
+            padding:0 20px;scrollbar-width:none;-ms-overflow-style:none}
+.subnav .in::-webkit-scrollbar{display:none}
+.subnav a{padding:13px 16px;font-size:.84rem;font-weight:700;color:rgba(255,255,255,.66);
+          text-decoration:none;white-space:nowrap;border-bottom:3px solid transparent}
+.subnav a:hover{color:#fff}
+.subnav a.on{color:#fff;border-bottom-color:var(--brand)}
+.subnav a .shut{font-size:.68rem;font-weight:700;opacity:.6;margin-left:5px}
+@media(max-width:860px){.subnav .in{padding:0 16px}.subnav a{padding:12px 13px;font-size:.8rem}}
+
+/* ── hero ── */
+.hero{position:relative;background:var(--grad);color:#fff;overflow:hidden;isolation:isolate}
+.hero .shot{position:absolute;inset:0;background-size:cover;background-position:center;
+            z-index:-2}
+.hero .veil{position:absolute;inset:0;z-index:-1}
+.hero .in{max-width:1120px;margin:0 auto;padding:54px 20px 48px;position:relative}
+.hero .kick{display:inline-flex;align-items:center;gap:7px;font-size:.72rem;font-weight:800;
+            letter-spacing:.14em;text-transform:uppercase;background:rgba(255,255,255,.17);
+            border:1px solid rgba(255,255,255,.26);padding:6px 13px;border-radius:999px;
+            margin-bottom:18px}
+.hero h1{font-size:clamp(1.65rem,4.4vw,2.85rem);font-weight:800;letter-spacing:-.03em;
+         line-height:1.08;max-width:19ch;text-wrap:balance}
+.hero .tag{margin-top:14px;font-size:clamp(.96rem,1.6vw,1.12rem);font-weight:600;
+           opacity:.93;max-width:44ch;line-height:1.45}
+.hero .facts{margin-top:22px;display:flex;flex-wrap:wrap;gap:8px 22px;font-size:.92rem;
+             font-weight:600;opacity:.95}
+.hero .facts span{display:inline-flex;align-items:center;gap:7px}
+.hero .ctas{margin-top:30px;display:flex;flex-wrap:wrap;gap:11px}
+.hero .ctas a{padding:14px 24px;border-radius:12px;font-weight:700;font-size:.95rem;
+              text-decoration:none}
+.hero .ctas a.go{background:#fff;color:var(--brand-dark);box-shadow:0 8px 22px rgba(11,21,36,.22)}
+.hero .ctas a.go:hover{transform:translateY(-1px)}
+.hero .ctas a.alt{background:rgba(255,255,255,.14);color:#fff;
+                  border:1.5px solid rgba(255,255,255,.4)}
+.hero .ctas a.alt:hover{background:rgba(255,255,255,.22)}
+@media(max-width:620px){.hero .in{padding:38px 16px 34px}.hero .ctas a{flex:1 1 100%;text-align:center}}
+
+/* ── at a glance ── */
+.glance{background:#fff;border-bottom:1px solid var(--line)}
+.glance .in{max-width:1120px;margin:0 auto;padding:0 20px;
+            display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.glance .cell{padding:20px 22px 20px 0;border-left:1px solid var(--line);
+              padding-left:22px}
+.glance .cell:first-child{border-left:none;padding-left:0}
+.glance .k{font-size:.68rem;font-weight:800;letter-spacing:.13em;text-transform:uppercase;
+           color:var(--mist);margin-bottom:5px}
+.glance .v{font-weight:700;font-size:.97rem;letter-spacing:-.01em;line-height:1.35}
+@media(max-width:700px){
+  .glance .in{grid-template-columns:1fr 1fr;padding:0 16px}
+  .glance .cell{padding:15px 14px 15px 14px;border-left:1px solid var(--line);
+                border-top:1px solid var(--line)}
+  .glance .cell:nth-child(1),.glance .cell:nth-child(2){border-top:none}
+  .glance .cell:nth-child(odd){border-left:none;padding-left:0}
+}
+
+/* ── body: form + sidebar ── */
+.main{flex:1;max-width:1120px;margin:0 auto;width:100%;padding:34px 20px 56px;
+      display:grid;grid-template-columns:minmax(0,1fr) 322px;gap:26px;align-items:start}
+/* a thinly configured event has no sidebar, so centre the form */
+.main.solo{grid-template-columns:minmax(0,760px);justify-content:center}
+@media(max-width:940px){.main{grid-template-columns:1fr;padding:24px 16px 48px}}
+
+.panel{background:var(--card);border:1px solid var(--line);border-radius:18px;
+        padding:30px 30px 34px;box-shadow:0 14px 40px -24px rgba(11,21,36,.3)}
+.panel > .ptitle{font-size:1.32rem;font-weight:800;letter-spacing:-.025em;margin-bottom:7px}
+.panel > .pintro{color:var(--slate);font-size:.94rem;margin-bottom:24px;max-width:58ch}
+.panel > .pintro:last-child{margin-bottom:0}
+@media(max-width:620px){.panel{padding:22px 19px 26px;border-radius:15px}}
+
+/* sidebar */
+.side{display:flex;flex-direction:column;gap:14px;position:sticky;top:112px}
+@media(max-width:940px){.side{position:static;top:auto}}
+.box{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:19px 20px}
+.box h3{font-size:.69rem;font-weight:800;letter-spacing:.13em;text-transform:uppercase;
+        color:var(--mist);margin-bottom:13px}
+.box.accent{background:var(--brand-soft);border-color:transparent;
+            box-shadow:inset 0 0 0 1.5px var(--brand)}
+.box.accent h3{color:var(--brand-dark)}
+
+.dates{display:flex;flex-direction:column;gap:11px}
+.dates .d{display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+          padding-bottom:11px;border-bottom:1px dashed var(--line)}
+.dates .d:last-child{padding-bottom:0;border-bottom:none}
+.dates .d .l{font-size:.85rem;color:var(--slate);font-weight:600;min-width:0}
+.dates .d .r{font-weight:700;font-size:.85rem;text-align:right;white-space:nowrap}
+.dates .d.next .l{color:var(--ink)}
+.dates .d.next .r{color:var(--brand-dark)}
+.dates .d .cd{display:block;font-size:.72rem;font-weight:800;color:var(--brand);
+              letter-spacing:.02em}
+.dates .d.gone{opacity:.5}
+.dates .d.gone .r{text-decoration:line-through}
+
+.inc{list-style:none;display:flex;flex-direction:column;gap:9px}
+.inc li{display:flex;gap:9px;font-size:.87rem;color:var(--slate);line-height:1.45}
+.inc li::before{content:"\2713";color:var(--go);font-weight:800;flex:0 0 auto}
+
+.reach{display:flex;flex-direction:column;gap:8px}
+.reach a,.reach .ln{display:flex;align-items:center;gap:9px;font-size:.87rem;
+                    color:var(--slate);text-decoration:none;font-weight:600;word-break:break-word}
+.reach a:hover{color:var(--brand)}
+.reach .ico{flex:0 0 auto;width:17px;text-align:center;opacity:.65}
+
+/* ── footer ── */
+.sitefoot{background:var(--ink);color:rgba(255,255,255,.62);margin-top:auto}
+.sitefoot .in{max-width:1120px;margin:0 auto;padding:30px 20px 34px;
+              display:flex;flex-wrap:wrap;gap:18px 34px;align-items:center;
+              justify-content:space-between;font-size:.83rem}
+.sitefoot b{color:#fff;font-weight:700;display:block;margin-bottom:3px}
+.sitefoot nav{display:flex;flex-wrap:wrap;gap:8px 20px}
+.sitefoot a{color:rgba(255,255,255,.72);text-decoration:none;font-weight:600}
+.sitefoot a:hover{color:#fff}
+.sitefoot .brandline{width:100%;border-top:1px solid rgba(255,255,255,.14);
+                     padding-top:16px;font-size:.78rem}
+.sitefoot .brandline a{color:#fff}
+
+/* ── floating WhatsApp ── */
+.wa{position:fixed;right:17px;bottom:17px;z-index:60;width:53px;height:53px;border-radius:50%;
+    background:#25D366;display:flex;align-items:center;justify-content:center;
+    box-shadow:0 8px 22px rgba(0,0,0,.26);text-decoration:none}
+.wa:hover{transform:scale(1.06)}
+.wa svg{width:27px;height:27px;fill:#fff}
+@media print{.wa,.mast,.subnav,.sitefoot,.hero .ctas{display:none}}
+
 </style>
 </head>
 <body>
@@ -223,33 +389,242 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand);
     });
   }
 
-  // Links to this event's other pages, all from the Sheet
+  /* ═══════════════════════════════════════════════════════════════
+     CONGRESS MICROSITE SHELL
+     Identical in register.html and abstracts.html. Builds the
+     masthead, sub-navigation, hero, at-a-glance strip, sidebar and
+     footer from the Sheet. Every piece returns '' when its setting
+     is blank, so a thinly configured event still looks intentional.
 
-  function logoStrip(){
+     page()  wraps the form in the whole shell
+     Call it as:  page('register', formHtml, sidebarHtml)
+     ═══════════════════════════════════════════════════════════════ */
+
+  function sh(){ return (cfg && cfg.shell) || {}; }
+
+  function marks(){
     var L = (cfg && cfg.links && cfg.links.logos) || [];
     if (!L.length) return '';
-    return '<div class="logos">' + L.map(function(u){
+    return '<div class="marks">' + L.map(function(u){
       return '<img src="' + esc(u) + '" alt="" loading="lazy">';
     }).join('') + '</div>';
   }
 
-  function linkBar(current){
+  /* The pages of this event, in the order a delegate meets them.
+     'current' is the one we are on. */
+  function navItems(current){
+    var L = (cfg && cfg.links) || {}, S = sh(), out = [];
+    if (L.site)      out.push({ k:'site',      t:'Association',  href:L.site });
+    if (L.register)  out.push({ k:'register',  t:'Registration', href:L.register,
+                                shut: !L.registrationOpen });
+    if (L.abstracts) out.push({ k:'abstracts', t:'Abstracts',    href:L.abstracts,
+                                shut: !L.abstractsOpen });
+    if (S.programme) out.push({ k:'programme', t:'Programme',    href:S.programme });
+    if (S.venueLink) out.push({ k:'venue',     t:'Venue',        href:S.venueLink });
+    if (L.app)       out.push({ k:'app',       t:'Conference app', href:L.app });
+    return out;
+  }
+
+  function masthead(current){
     var L = (cfg && cfg.links) || {};
-    var out = [];
-    if (L.register && current !== 'register')
-      out.push('<a href="' + esc(L.register) + '"' + (L.registrationOpen ? ' class="primary"' : '') +
-               '>Register for the conference</a>');
-    if (L.abstracts && current !== 'abstracts')
-      out.push('<a href="' + esc(L.abstracts) + '"' + (L.abstractsOpen ? ' class="primary"' : '') +
-               '>Submit an abstract</a>');
-    if (L.app) out.push('<a href="' + esc(L.app) + '">Conference app</a>');
-    if (L.site) out.push('<a href="' + esc(L.site) + '">Association website</a>');
-    return out.length ? '<div class="linkbar">' + out.join('') + '</div>' : '';
+    var act = [];
+    // The page you are not on is the one worth offering
+    if (current !== 'abstracts' && L.abstracts && L.abstractsOpen)
+      act.push('<a class="ghost" href="' + esc(L.abstracts) + '">Submit an abstract</a>');
+    if (current !== 'register' && L.register && L.registrationOpen)
+      act.push('<a class="solid" href="' + esc(L.register) + '">Register</a>');
+
+    return '<header class="mast"><div class="in">' +
+        marks() +
+        '<div class="who">' +
+          '<div class="nm">' + esc(cfg.event) + '</div>' +
+          '<div class="dt">' + esc(cfg.dates || '') +
+            (cfg.venue ? ' &middot; ' + esc(cfg.venue) : '') + '</div>' +
+        '</div>' +
+        (act.length ? '<div class="act">' + act.join('') + '</div>' : '') +
+      '</div></header>';
+  }
+
+  function subnav(current){
+    var items = navItems(current);
+    if (items.length < 2) return '';
+    return '<nav class="subnav"><div class="in">' + items.map(function(i){
+      return '<a href="' + esc(i.href) + '"' + (i.k === current ? ' class="on"' : '') + '>' +
+             esc(i.t) + (i.shut ? '<span class="shut">closed</span>' : '') + '</a>';
+    }).join('') + '</div></nav>';
+  }
+
+  function hero(kicker, headline, ctas){
+    var S = sh(), L = (cfg && cfg.links) || {};
+    var facts = [];
+    if (cfg.dates) facts.push('<span>📅 ' + esc(cfg.dates) + '</span>');
+    if (cfg.venue) facts.push('<span>📍 ' + esc(cfg.venue) +
+                              (S.city ? ', ' + esc(S.city) : '') + '</span>');
+    else if (S.city) facts.push('<span>📍 ' + esc(S.city) + '</span>');
+
+    var live = (ctas || []).filter(function(c){ return c && c.href; });
+    var btn = live.map(function(c, i){
+      // one button alone always reads as the primary one
+      var cls = (live.length === 1 || !c.alt) ? 'go' : 'alt';
+      return '<a class="' + cls + '" href="' + esc(c.href) + '">' + esc(c.label) + '</a>';
+    });
+
+    // A photo needs darkening or white text on it is unreadable
+    var shot = '', veil = '';
+    if (S.hero){
+      var a = (S.overlay == null ? 55 : S.overlay) / 100;
+      shot = '<div class="shot" style="background-image:url(\'' + esc(S.hero) + '\')"></div>';
+      veil = '<div class="veil" style="background:linear-gradient(130deg,' +
+             'rgba(0,0,0,' + (a + 0.12).toFixed(2) + '),rgba(0,0,0,' + a.toFixed(2) + '))"></div>';
+    }
+
+    return '<section class="hero">' + shot + veil + '<div class="in">' +
+        (kicker ? '<div class="kick">' + esc(kicker) + '</div>' : '') +
+        '<h1>' + esc(headline || cfg.event) + '</h1>' +
+        (S.tagline ? '<p class="tag">' + esc(S.tagline) + '</p>' : '') +
+        (facts.length ? '<div class="facts">' + facts.join('') + '</div>' : '') +
+        (btn.length ? '<div class="ctas">' + btn.join('') + '</div>' : '') +
+      '</div></section>';
+  }
+
+  function glance(){
+    var G = sh().glance || [];
+    if (!G.length) return '';
+    return '<section class="glance"><div class="in">' + G.map(function(g){
+      return '<div class="cell"><div class="k">' + esc(g.label) + '</div>' +
+             '<div class="v">' + esc(g.value) + '</div></div>';
+    }).join('') + '</div></section>';
+  }
+
+  /* Key dates with a countdown on the next one due */
+  function datesBox(){
+    var D = sh().keyDates || [];
+    if (!D.length) return '';
+    return '<div class="box"><h3>Key dates</h3><div class="dates">' + D.map(function(d){
+      var cls = d.next ? ' next' : (d.days !== null && d.days < 0 ? ' gone' : '');
+      var cd  = '';
+      if (d.next){
+        cd = d.days === 0 ? 'today'
+           : d.days === 1 ? 'tomorrow'
+           : d.days + ' days to go';
+      }
+      return '<div class="d' + cls + '"><span class="l">' + esc(d.label) + '</span>' +
+             '<span class="r">' + esc(d.display) +
+             (cd ? '<span class="cd">' + cd + '</span>' : '') + '</span></div>';
+    }).join('') + '</div></div>';
+  }
+
+  function includesBox(){
+    var I = sh().includes || [];
+    if (!I.length) return '';
+    return '<div class="box"><h3>Your registration includes</h3><ul class="inc">' +
+      I.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></div>';
+  }
+
+  function reachBox(){
+    var S = sh(), rows = [];
+    if (S.email) rows.push('<a href="mailto:' + esc(S.email) + '">' +
+      '<span class="ico">✉</span>' + esc(S.email) + '</a>');
+    if (S.phone) rows.push('<a href="tel:' + esc(S.phone.replace(/[^0-9+]/g,'')) + '">' +
+      '<span class="ico">☎</span>' + esc(S.phone) + '</a>');
+    if (S.whatsapp) rows.push('<a href="https://wa.me/' + esc(S.whatsapp) +
+      '" target="_blank" rel="noopener"><span class="ico">💬</span>WhatsApp us</a>');
+    if (!rows.length) return '';
+    return '<div class="box"><h3>Need help?</h3><div class="reach">' +
+           rows.join('') + '</div></div>';
+  }
+
+  function sitefoot(){
+    var L = (cfg && cfg.links) || {}, S = sh();
+    var nav = navItems('').map(function(i){
+      return '<a href="' + esc(i.href) + '">' + esc(i.t) + '</a>';
+    }).join('');
+    return '<footer class="sitefoot"><div class="in">' +
+        '<div><b>' + esc(cfg.event) + '</b>' + esc(cfg.dates || '') +
+          (cfg.venue ? ' &middot; ' + esc(cfg.venue) : '') + '</div>' +
+        (nav ? '<nav>' + nav + '</nav>' : '') +
+        '<div class="brandline">Conference platform by ' +
+          '<a href="https://confhub.ng" target="_blank" rel="noopener">ConfHub</a>' +
+          ' &mdash; registration, abstracts and delegate passes for ' +
+          'Nigerian scientific associations.' +
+          (S.email ? ' Event enquiries: <a href="mailto:' + esc(S.email) + '">' +
+                     esc(S.email) + '</a>' : '') +
+        '</div>' +
+      '</div></footer>';
+  }
+
+  function whatsappFab(){
+    var w = sh().whatsapp;
+    if (!w) return '';
+    return '<a class="wa" href="https://wa.me/' + esc(w) + '" target="_blank" ' +
+      'rel="noopener" aria-label="Chat with the organisers on WhatsApp">' +
+      '<svg viewBox="0 0 24 24"><path d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15' +
+      '-.2.3-.77.96-.94 1.16-.17.2-.35.22-.64.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77' +
+      '-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52' +
+      '-.07-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.01' +
+      '-1.04 2.47s1.06 2.87 1.21 3.07c.15.2 2.09 3.2 5.08 4.48.71.3 1.26.49 1.69.63.71.22 1.36.19' +
+      ' 1.87.12.56-.08 1.75-.71 2-1.41.25-.69.25-1.29.17-1.41-.07-.12-.27-.2-.57-.35z"/>' +
+      '<path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38' +
+      'a9.87 9.87 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2zm0' +
+      ' 18.15h-.01c-1.53 0-3.03-.41-4.34-1.19l-.31-.18-3.23.85.86-3.15-.2-.33a8.2 8.2 0 0 1' +
+      '-1.26-4.38c0-4.54 3.7-8.23 8.25-8.23 2.2 0 4.27.86 5.83 2.42a8.19 8.19 0 0 1 2.41 5.82' +
+      'c0 4.54-3.7 8.24-8.24 8.24z"/></svg></a>';
+  }
+
+  /* Assemble. 'body' is the form panel, 'side' the sidebar boxes. */
+  function page(current, opts){
+    var o = opts || {};
+    document.body.className = 'shelled';
+    var side = o.side == null ? (datesBox() + includesBox() + reachBox()) : o.side;
+    var solo = side ? '' : ' solo';
+    root.innerHTML =
+      '<div class="site">' +
+        '<div class="topbar">' + masthead(current) + subnav(current) + '</div>' +
+        hero(o.kicker, o.headline, o.ctas) +
+        glance() +
+        '<main class="main' + solo + '">' +
+          '<div class="panel">' + (o.body || '') + '</div>' +
+          (side ? '<aside class="side">' + side + '</aside>' : '') +
+        '</main>' +
+        sitefoot() +
+      '</div>' +
+      whatsappFab();
+  }
+
+  /* Loading, closed and error screens get the same frame once the
+     config has landed, and a bare centred card before that. */
+  function shellState(current, kicker, html){
+    if (!cfg){ root.innerHTML = '<div class="bare">' + html + '</div>'; return; }
+    page(current, { kicker:kicker, body:html, side:(datesBox() + reachBox()) });
+  }
+
+
+  /* The submission rules, in the sidebar where an author can keep
+     glancing at them while they write. All of it from the Sheet. */
+  function rulesBox(){
+    var r = [];
+    if (cfg.wordLimit)     r.push('Up to ' + cfg.wordLimit + ' words, excluding the title and authors');
+    if (cfg.maxCoauthors)  r.push('Up to ' + cfg.maxCoauthors + ' authors, in the order they should appear');
+    if ((cfg.sections||[]).length > 1)
+      r.push('Structured under ' + cfg.sections.length + ' headings: ' + cfg.sections.join(', '));
+    if (cfg.requireEthics) r.push('Ethics approval, or why it was not required');
+    if (cfg.askPresentation && (cfg.presentationOptions||[]).length)
+      r.push('Your preference: ' + cfg.presentationOptions.join(', '));
+    r.push('Reviewed blind — reviewers never see authors or institutions');
+    r.push('Free to submit, and separate from registering');
+    return '<div class="box"><h3>Before you submit</h3><ul class="inc">' +
+      r.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></div>';
   }
 
   function state(html, withLost){
-    root.innerHTML = '<div class="state">' + html +
-      (withLost ? lostBlock() : '') + '</div>';
+    var inner = html + (withLost ? lostBlock() : '');
+    if (!cfg){
+      root.innerHTML = '<div class="bare"><div class="state">' + inner + '</div></div>';
+    } else {
+      page('abstracts', { kicker:'Call for abstracts',
+                          body:'<div class="notice">' + inner + '</div>',
+                          side:(datesBox() + reachBox()) });
+    }
     if (withLost) wireLost();
   }
 
@@ -359,16 +734,18 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand);
         }
         existing = a;
         if (a.status === 'Withdrawn'){
-          root.innerHTML =
-            '<div class="state">' +
-              '<h1>' + esc(a.absid) + ' \u2014 withdrawn</h1>' +
-              '<p><b>' + esc(a.title) + '</b></p>' +
-              '<p style="margin-top:12px">This abstract has been withdrawn and will not be reviewed.</p>' +
+          page('abstracts', {
+            kicker: esc(a.absid) + ' \u2014 withdrawn',
+            body:
+              '<div class="ptitle">' + esc(a.absid) + ' &mdash; withdrawn</div>' +
+              '<p class="pintro"><b>' + esc(a.title) + '</b><br>' +
+              'This abstract has been withdrawn and will not be reviewed.</p>' +
               '<div class="danger restore"><h3>Changed your mind?</h3>' +
               '<p>You can reinstate it up to the deadline, and edit it as normal afterwards.</p>' +
               '<button id="restoreBtn">Reinstate this abstract</button>' +
-              '<p class="msg" id="wMsg2" style="text-align:left;margin-top:8px"></p></div>' +
-            '</div>';
+              '<p class="msg" id="wMsg2" style="text-align:left;margin-top:8px"></p></div>',
+            side: datesBox() + reachBox()
+          });
           document.getElementById('restoreBtn').addEventListener('click', function(){
             doWithdraw(true, this, document.getElementById('wMsg2'));
           });
@@ -415,15 +792,19 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand);
       '<span class="hint">State the approving body and reference number, or explain why approval was not required.</span></label>' +
       '<textarea id="f-ethics" style="min-height:76px">' + esc(e.ethics||'') + '</textarea></div>' : '';
 
-    root.innerHTML =
-      logoStrip() +
-      '<div class="head">' +
-        '<div class="kick">' + (editToken ? 'Edit your abstract' : 'Call for abstracts') + '</div>' +
-        '<h1>' + esc(cfg.event) + '</h1>' +
-        '<div class="meta">' + esc(cfg.dates) + (cfg.venue ? ' &middot; ' + esc(cfg.venue) : '') + '</div>' +
-      '</div>' +
-      '<div class="card">' +
-        linkBar('abstracts') +
+    var S = sh();
+    var body =
+        '<div class="ptitle">' +
+          (editToken ? 'Edit your abstract' : 'Submit an abstract') + '</div>' +
+        '<p class="pintro">' +
+          (editToken
+            ? 'Make your changes below and save at the bottom of the form. ' +
+              'You can come back to this link as often as you like until the deadline.'
+            : (S.absIntro ? esc(S.absIntro)
+                          : 'Submitting an abstract is free and separate from registering for the ' +
+                            'conference. Abstracts are peer reviewed, and authors and institutions ' +
+                            'are hidden from reviewers.')) +
+        '</p>' +
 
         (editToken ? '' :
           '<div class="already"><h3>Already submitted an abstract?</h3>' +
@@ -496,13 +877,24 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand);
             (editToken ? 'Save changes' : 'Submit abstract') + '</button>' +
           '<p class="msg" id="msg"></p>' +
         '</div>' +
-      '</div>' +
       (editToken ?
         '<div class="danger" style="margin-top:18px"><h3>Withdraw this abstract</h3>' +
         '<p>It will not be reviewed. You can reinstate it up to the deadline.</p>' +
         '<button id="wdBtn">Withdraw ' + esc(e.absid || 'this abstract') + '</button>' +
-        '<p class="msg" id="wMsg" style="text-align:left;margin-top:8px"></p></div>' : '') +
-      '<p class="foot">Powered by <a href="https://confhub.ng">ConfHub.ng</a></p>';
+        '<p class="msg" id="wMsg" style="text-align:left;margin-top:8px"></p></div>' : '');
+
+    var ctas = [];
+    if (!editToken && cfg.links && cfg.links.register && cfg.links.registrationOpen)
+      ctas.push({ label:'Register for the conference', href:cfg.links.register, alt:true });
+
+    page('abstracts', {
+      kicker:   editToken ? 'Editing ' + (e.absid || 'your abstract')
+                          : (cfg.deadline ? 'Abstracts close ' + cfg.deadline : 'Call for abstracts'),
+      headline: cfg.event,
+      ctas:     ctas,
+      body:     body,
+      side:     datesBox() + rulesBox() + reachBox()
+    });
 
     if (editToken){
       var wd = document.getElementById('wdBtn');
