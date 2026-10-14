@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+
+<!-- ═══════════════════════════════════════════════
+     EDIT THESE FIVE LINES FOR EACH EVENT
+     ═══════════════════════════════════════════════ -->
+<title>Ask a Question &mdash; 25th APSON AGM</title>
+<meta property="og:title" content="Ask a Question &mdash; 25th APSON AGM">
+<meta property="og:description" content="Put a question to the panel from your phone.">
+<meta property="og:image" content="https://apson2026.confhub.ng/apson-logo.png">
+<meta property="og:url" content="https://apson2026.confhub.ng/qa.html">
+<!-- ═══════════════════════════════════════════════ -->
+<meta property="og:type" content="website">
+<meta name="description" content="Put a question to the panel from your phone.">
+<meta name="theme-color" content="#2B46D4">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   THE ONLY LINE YOU EVER EDIT
+   Paste the /exec URL for this event's Apps Script deployment.
+   ═══════════════════════════════════════════════════════════════ */
+const API_URL = "PASTE_YOUR_EXEC_URL_HERE";
+</script>
+
+<style>
+:root{
+  --ink:#0B1524; --slate:#4A5B72; --mist:#8A9AAF; --line:#E2E8F0;
+  --bg:#F5F8FC; --card:#FFFFFF;
+  --brand:#2B46D4; --brand-dark:#1E2F9E; --brand-soft:#EEF1FE; --sky:#0E9DE5;
+  --grad:linear-gradient(130deg,#2B46D4,#0E9DE5);
+  --go:#10B981; --amber:#F59E0B; --red:#DC2626;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Plus Jakarta Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+     background:var(--bg);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased;
+     padding:18px 14px 90px}
+:focus-visible{outline:3px solid var(--sky);outline-offset:2px}
+.wrap{max-width:620px;margin:0 auto}
+button{font-family:inherit;cursor:pointer}
+
+.logos{display:flex;gap:12px;justify-content:center;margin-bottom:14px}
+.logos img{height:48px;width:auto;object-fit:contain;background:#fff;border-radius:10px;padding:6px}
+.head{background:var(--grad);color:#fff;border-radius:18px;padding:22px 24px;margin-bottom:14px}
+.head .kick{font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;opacity:.85;font-weight:700}
+.head h1{font-size:1.3rem;font-weight:800;letter-spacing:-.025em;margin:7px 0 4px;line-height:1.25}
+.head p{font-size:.86rem;opacity:.92}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 22px;margin-bottom:12px}
+.card h2{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mist);
+         font-weight:800;margin-bottom:12px}
+label{display:block;font-size:.85rem;font-weight:700;margin-bottom:5px}
+input,textarea,select{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:11px;
+  font:inherit;font-size:.95rem;background:#fff;color:var(--ink);margin-bottom:11px}
+textarea{min-height:94px;resize:vertical}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--brand);
+  box-shadow:0 0 0 3px rgba(43,70,212,.1)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:520px){.two{grid-template-columns:1fr}}
+.hp{position:absolute;left:-9999px}
+.count{text-align:right;font-size:.76rem;color:var(--mist);margin:-6px 0 10px}
+.count.over{color:var(--red);font-weight:700}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;background:var(--grad);color:#fff;
+     font-weight:700;font-size:.97rem;box-shadow:0 5px 16px rgba(43,70,212,.28)}
+.btn:disabled{opacity:.6}
+.msg{margin-top:10px;font-size:.88rem;font-weight:600;min-height:1.1em;text-align:center}
+
+.q{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:15px 17px;
+   margin-bottom:9px;display:flex;gap:13px;align-items:flex-start}
+.q.answered{opacity:.6}
+.q .body{flex:1;min-width:0}
+.q .txt{font-size:.95rem;line-height:1.5}
+.q .who{font-size:.78rem;color:var(--mist);margin-top:5px}
+.q .sess{display:inline-block;font-size:.68rem;font-weight:800;letter-spacing:.06em;
+         text-transform:uppercase;background:var(--brand-soft);color:var(--brand-dark);
+         padding:2px 8px;border-radius:999px;margin-bottom:6px}
+.vote{flex:0 0 52px;border:1.5px solid var(--line);background:#fff;border-radius:12px;
+      padding:8px 0;text-align:center;color:var(--slate)}
+.vote:hover{border-color:var(--brand);color:var(--brand)}
+.vote.done{background:var(--brand);border-color:var(--brand);color:#fff}
+.vote .n{display:block;font-weight:800;font-size:1rem;font-family:"IBM Plex Mono",monospace}
+.vote .c{display:block;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase}
+.done-tag{font-size:.68rem;font-weight:800;color:var(--go);letter-spacing:.06em;text-transform:uppercase}
+
+.state{background:var(--card);border-radius:18px;padding:40px 26px;text-align:center}
+.state h1{font-size:1.15rem;margin-bottom:8px}
+.state p{color:var(--slate);font-size:.93rem}
+.diag{margin-top:18px;padding:13px 15px;background:#FEF6E7;border:1px solid #F5D9A8;
+      border-radius:12px;font-size:.81rem;color:#7A4E06;text-align:left}
+.empty{text-align:center;color:var(--mist);font-size:.9rem;padding:26px 10px}
+.foot{text-align:center;margin-top:20px;font-size:.78rem;color:var(--mist)}
+.foot a{color:var(--brand);text-decoration:none;font-weight:600}
+
+/* Display mode for the screen in the hall */
+body.display{background:#0B1524;padding:30px 36px}
+body.display .wrap{max-width:1180px}
+body.display .logos img{height:64px}
+body.display .head{background:transparent;padding:0 0 18px;border-bottom:2px solid #24354F;border-radius:0}
+body.display .head h1{font-size:2.1rem}
+body.display .card,body.display .foot{display:none}
+body.display .qlist{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:20px}
+body.display .q{background:#12203A;border-color:#24354F;border-radius:16px;padding:20px 22px}
+body.display .q .txt{color:#fff;font-size:1.32rem;line-height:1.4}
+body.display .q .who{color:#7E93AD;font-size:.95rem;margin-top:9px}
+body.display .q .sess{background:rgba(43,70,212,.3);color:#A9BEFF;font-size:.78rem}
+body.display .vote{background:transparent;border-color:#24354F;color:#7E93AD;flex-basis:66px}
+body.display .vote .n{font-size:1.3rem}
+body.display .empty{color:#7E93AD;font-size:1.3rem;padding:80px}
+@media(max-width:900px){body.display .qlist{grid-template-columns:1fr}}
+.hide{display:none}
+</style>
+</head>
+<body>
+<div class="wrap" id="root">
+  <div class="state"><h1>Loading&hellip;</h1></div>
+</div>
+
+<script>
+(function(){
+  var root = document.getElementById('root');
+  var cfg = null, display = location.hash.replace(/^#/,'').toLowerCase() === 'display';
+  var voted = {}, session = '', timer = null;
+
+  try { voted = JSON.parse(localStorage.getItem('qa_voted') || '{}'); } catch(e){ voted = {}; }
+
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function $(id){ return document.getElementById(id); }
+  function applyBrand(hex){
+    if (!/^#[0-9a-fA-F]{6}$/.test(String(hex||''))) return;
+    var r=parseInt(hex.substr(1,2),16), g=parseInt(hex.substr(3,2),16), b=parseInt(hex.substr(5,2),16);
+    var li=function(v){ return Math.min(255, Math.round(v+(255-v)*0.35)); };
+    var s2='#'+[li(r),li(g),li(b)].map(function(v){ return ('0'+v.toString(16)).slice(-2); }).join('');
+    var rt=document.documentElement;
+    rt.style.setProperty('--brand',hex); rt.style.setProperty('--sky',s2);
+    rt.style.setProperty('--grad','linear-gradient(130deg,'+hex+','+s2+')');
+    rt.style.setProperty('--brand-dark',hex);
+    rt.style.setProperty('--brand-soft','rgba('+r+','+g+','+b+',0.09)');
+    var m=document.querySelector('meta[name=theme-color]'); if(m) m.setAttribute('content',hex);
+  }
+
+  if (!API_URL || API_URL.indexOf('PASTE') === 0){
+    root.innerHTML = '<div class="state"><h1>Not configured yet</h1>' +
+      '<p>The API URL has not been set in this page.</p></div>'; return;
+  }
+
+  fetch(API_URL + '?action=qaconfig')
+    .then(function(r){
+      return r.text().then(function(t){
+        if (t.indexOf('<') === 0) throw { detail:'The Apps Script deployment is not public. ' +
+          'Deploy \u2192 Manage deployments \u2192 pencil \u2192 Who has access: Anyone \u2192 Deploy.' };
+        var c; try { c = JSON.parse(t); } catch(e){ throw { detail:'Server did not return valid data.' }; }
+        if (!c || !c.ok) throw { detail:(c && c.error) || 'Unknown problem.' };
+        return c;
+      });
+    })
+    .then(function(c){
+      cfg = c;
+      applyBrand(c.brand);
+      if (display) document.body.classList.add('display');
+      if (!c.open && !display){
+        root.innerHTML = '<div class="state"><h1>Questions are closed</h1>' +
+          '<p>The organisers will open questions when a session begins. Please check back shortly.</p></div>';
+        return;
+      }
+      draw();
+      poll();
+      timer = setInterval(poll, display ? 8000 : 20000);
+    })
+    .catch(function(err){
+      root.innerHTML = '<div class="state"><h1>Could not load</h1><p>Please ask at the desk.</p>' +
+        '<div class="diag"><b>For the organiser:</b><br>' +
+        esc((err && err.detail) || 'Could not reach the server.') + '</div></div>';
+    });
+
+  function draw(){
+    var logos = (cfg.logos && cfg.logos.length)
+      ? '<div class="logos">' + cfg.logos.map(function(u){
+          return '<img src="' + esc(u) + '" alt="" loading="lazy">'; }).join('') + '</div>' : '';
+
+    var sessions = (cfg.sessions && cfg.sessions.length)
+      ? '<label for="f-sess">Session</label><select id="f-sess">' +
+        '<option value="">Choose the session\u2026</option>' +
+        cfg.sessions.map(function(s){ return '<option>' + esc(s) + '</option>'; }).join('') +
+        '</select>' : '';
+
+    root.innerHTML =
+      logos +
+      '<div class="head">' +
+        '<div class="kick">' + (display ? 'Audience questions' : 'Ask the panel') + '</div>' +
+        '<h1>' + esc(cfg.event) + '</h1>' +
+        (display ? '' : '<p>Type your question below. The chair will put the best ones to the panel.</p>') +
+      '</div>' +
+
+      (display || !cfg.raffle ? '' :
+        '<div class="card" style="background:#FFFBEA;border-color:#F0D48A">' +
+          '<h2 style="color:#8A6A08">Prize draw</h2>' +
+          '<p style="font-size:.9rem;color:#6B5200;line-height:1.55">' + esc(cfg.raffle) + '</p></div>') +
+
+      (display ? '' :
+        '<div class="card"><h2>Your question</h2>' +
+          sessions +
+          '<label for="f-q">Question</label>' +
+          '<textarea id="f-q" maxlength="500" placeholder="Keep it short and specific\u2026"></textarea>' +
+          '<div class="count" id="qCount">0 / 500</div>' +
+          '<div class="two">' +
+            '<div><label for="f-n">Your name' +
+              (cfg.raffle && cfg.raffleNeedsName ? '' :
+                ' <span style="font-weight:500;color:var(--mist)">(optional)</span>') +
+              '</label><input id="f-n" autocomplete="name"></div>' +
+            '<div><label for="f-i">Institution <span style="font-weight:500;color:var(--mist)">(optional)</span></label>' +
+              '<input id="f-i"></div>' +
+          '</div>' +
+          '<label for="f-e">Email' +
+            (cfg.raffle ? ' \u2014 needed to enter the draw'
+                        : ' <span style="font-weight:500;color:var(--mist)">(optional)</span>') +
+            '</label>' +
+          '<input id="f-e" type="email" autocomplete="email" inputmode="email">' +
+          '<input class="hp" id="f-web" tabindex="-1" autocomplete="off" aria-hidden="true">' +
+          '<button class="btn" id="send">Send my question</button>' +
+          '<p class="msg" id="msg"></p>' +
+        '</div>') +
+
+      '<div class="qlist" id="qlist"><div class="empty">Loading questions\u2026</div></div>' +
+      (display ? '' : '<p class="foot">Powered by <a href="https://confhub.ng">ConfHub.ng</a></p>');
+
+    if (!display){
+      $('send').addEventListener('click', submit);
+      $('f-q').addEventListener('input', function(){
+        var n = this.value.length, c = $('qCount');
+        c.textContent = n + ' / 500';
+        c.className = 'count' + (n > 500 ? ' over' : '');
+      });
+      if ($('f-sess')) $('f-sess').addEventListener('change', function(){
+        session = this.value; poll();
+      });
+    }
+  }
+
+  function poll(){
+    fetch(API_URL + '?action=qalive' + (session ? '&session=' + encodeURIComponent(session) : ''))
+      .then(function(r){ return r.json(); })
+      .then(function(d){ if (d && d.ok) render(d.questions || []); })
+      .catch(function(){});
+  }
+
+  function render(list){
+    var box = $('qlist');
+    if (!box) return;
+    if (!list.length){
+      box.innerHTML = '<div class="empty">' +
+        (display ? 'Waiting for the first question\u2026'
+                 : 'No questions yet \u2014 be the first to ask.') + '</div>';
+      return;
+    }
+    box.innerHTML = list.map(function(q){
+      var did = !!voted[q.r];
+      var who = [q.n, q.o].filter(Boolean).join(', ');
+      return '<div class="q' + (q.a ? ' answered' : '') + '">' +
+        '<button class="vote' + (did ? ' done' : '') + '" data-r="' + q.r + '"' +
+          (display ? ' disabled' : '') + '>' +
+          '<span class="n">' + q.v + '</span><span class="c">' + (did ? 'voted' : 'vote') + '</span>' +
+        '</button>' +
+        '<div class="body">' +
+          (q.s ? '<span class="sess">' + esc(q.s) + '</span><br>' : '') +
+          '<div class="txt">' + esc(q.q) + '</div>' +
+          (who || q.a ? '<div class="who">' + esc(who) +
+            (q.a ? (who ? ' \u00b7 ' : '') + '<span class="done-tag">answered</span>' : '') +
+            '</div>' : '') +
+        '</div></div>';
+    }).join('');
+
+    if (!display) box.querySelectorAll('.vote').forEach(function(b){
+      b.addEventListener('click', function(){ upvote(+this.dataset.r, this); });
+    });
+  }
+
+  function upvote(row, btn){
+    if (voted[row]) return;
+    voted[row] = 1;
+    try { localStorage.setItem('qa_voted', JSON.stringify(voted)); } catch(e){}
+    var n = btn.querySelector('.n');
+    n.textContent = (parseInt(n.textContent, 10) || 0) + 1;
+    btn.className = 'vote done';
+    btn.querySelector('.c').textContent = 'voted';
+    fetch(API_URL, { method:'POST', headers:{ 'Content-Type':'text/plain;charset=utf-8' },
+                     body: JSON.stringify({ action:'upvote', row: row }) }).catch(function(){});
+  }
+
+  function submit(){
+    var btn = $('send'), msg = $('msg');
+    var q = $('f-q').value.trim();
+    msg.style.color = 'var(--red)';
+    if (q.length < 8){ msg.textContent = 'Please write your question in full.'; return; }
+    if (q.length > 500){ msg.textContent = 'Please keep it under 500 characters.'; return; }
+    if ($('f-sess') && !$('f-sess').value){ msg.textContent = 'Please choose the session.'; return; }
+    var nm = $('f-n').value.trim(), em = $('f-e').value.trim();
+    if (em && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){
+      msg.textContent = 'That email does not look right.'; return;
+    }
+    if (cfg.raffle && cfg.raffleNeedsName && (em || nm) && !(em && nm)){
+      msg.textContent = 'To enter the draw please give both your name and your email. ' +
+                        'Leave both blank to ask anonymously.';
+      return;
+    }
+
+    btn.disabled = true; btn.textContent = 'Sending\u2026'; msg.textContent = '';
+    fetch(API_URL, {
+      method:'POST', headers:{ 'Content-Type':'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action:'askquestion', question:q,
+        session: $('f-sess') ? $('f-sess').value : '',
+        name: nm, email: em, institution: $('f-i').value.trim(),
+        website: $('f-web').value })
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      btn.disabled = false; btn.textContent = 'Send my question';
+      if (!d || !d.ok){
+        msg.textContent = (d && d.error) || 'Could not send. Please try again.';
+        return;
+      }
+      $('f-q').value = ''; $('qCount').textContent = '0 / 500';
+      msg.style.color = 'var(--go)';
+      msg.textContent = d.moderated
+        ? 'Sent \u2014 it is with the chair now.'
+        : 'Sent \u2014 your question is now showing below.';
+      if (cfg.raffle && em && (!cfg.raffleNeedsName || nm)) msg.textContent += ' You are in the draw.';
+      poll();
+    })
+    .catch(function(){
+      btn.disabled = false; btn.textContent = 'Send my question';
+      msg.textContent = 'Could not reach the server. Check your connection.';
+    });
+  }
+})();
+</script>
+</body>
+</html>
