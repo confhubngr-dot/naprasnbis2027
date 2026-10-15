@@ -15,7 +15,7 @@
    THE ONLY LINE YOU EVER EDIT
    Paste the /exec URL for this event's Apps Script deployment.
    ═══════════════════════════════════════════════════════════════ */
-const API_URL = "https://script.google.com/macros/s/AKfycbzuXOOzdEVNdM9Lj5G18eFXFK0RU9yklZSFZ_rYFyGg_FEE8VaU0mu2B3cEbdqnjLZm/exec";
+const API_URL = "PASTE_YOUR_EXEC_URL_HERE";
 </script>
 
 <style>
@@ -87,6 +87,25 @@ tr:last-child td{border-bottom:none}
 .pill.wait{background:#F1F5F9;color:var(--mist)}
 .pill.split{background:rgba(245,158,11,.16);color:#8A5A08}
 .muted{color:var(--mist)}
+.qmod{border:1px solid var(--line);border-radius:13px;padding:14px 16px;margin-bottom:10px}
+.qtop{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.qvotes{font-size:.78rem;color:var(--slate);font-weight:700}
+.qtime{margin-left:auto;font-family:"IBM Plex Mono",monospace;font-size:.75rem;color:var(--mist)}
+.qtext{font-size:.95rem;line-height:1.5}
+.qwho{font-size:.8rem;color:var(--mist);margin-top:5px}
+.qacts{display:flex;gap:7px;margin-top:11px;flex-wrap:wrap}
+.qacts button{padding:8px 14px;border-radius:10px;border:1.5px solid var(--brand);background:var(--brand);
+  color:#fff;font-weight:700;font-size:.82rem}
+.qacts button.dim{background:#fff;color:var(--slate);border-color:var(--line)}
+.qacts button.dim:hover{border-color:#E5A3A3;color:#B03A3A}
+.exrow{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.exrow:last-child{border-bottom:none}
+.exn{flex:1;min-width:0;font-size:.93rem}
+.excount{font-family:"IBM Plex Mono",monospace;font-weight:700;font-size:1.05rem;color:var(--brand)}
+.exbtn{padding:8px 14px;border-radius:10px;border:1.5px solid var(--line);background:#fff;
+  font-weight:700;font-size:.82rem;color:var(--ink)}
+.exbtn:hover:not(:disabled){border-color:var(--brand);color:var(--brand)}
+.exbtn:disabled{opacity:.4}
 .num{text-align:right}
 .xtra{font-size:.74rem;color:var(--brand)}
 .pill.early{background:rgba(43,70,212,.12);color:var(--brand-dark)}
@@ -2523,6 +2542,8 @@ var qrcode = function() {
     if (has('abstracts')) tabs.push(['abstracts','Abstracts']);
     if (has('reviews')) tabs.push(['reviews','Review progress']);
     if (has('attendance')) tabs.push(['attendance','Attendance']);
+    if (D.has && D.has.leads) tabs.push(['leads','Exhibitor leads']);
+    if (D.has && D.has.questions) tabs.push(['questions','Questions']);
 
     root.innerHTML =
       logos +
@@ -2718,6 +2739,116 @@ var qrcode = function() {
       return;
     }
 
+    if (tab === 'leads'){
+      var ex = D.exhibitors || [], all = D.leads || [];
+      var rows = all.filter(function(l){
+        if (!q) return true;
+        return (l.name + ' ' + l.inst + ' ' + l.exhibitor).toLowerCase().indexOf(q) !== -1;
+      });
+      b.innerHTML = '<div class="cards">' +
+          kpi('Leads captured', all.length, null, 'brand') +
+          kpi('Exhibitors', ex.length) +
+          kpi('Best stand', (ex.slice().sort(function(a,c){ return c.count-a.count; })[0]||{}).company || '\u2014',
+              ex.length ? ((ex.slice().sort(function(a,c){ return c.count-a.count; })[0]||{}).count + ' leads') : '') +
+        '</div>' +
+        (ex.length ? '<div class="panel"><h2>By exhibitor</h2>' +
+          ex.slice().sort(function(a,c){ return c.count - a.count; }).map(function(x){
+            return '<div class="exrow">' +
+              '<div class="exn"><b>' + esc(x.company) + '</b>' +
+                (x.stand ? '<span class="muted"> \u00b7 ' + esc(x.stand) + '</span>' : '') +
+                (x.contact ? '<br><span class="muted" style="font-size:.82rem">' + esc(x.contact) +
+                  (x.email ? ' \u00b7 ' + esc(x.email) : '') + '</span>' : '') +
+              '</div>' +
+              '<span class="excount">' + x.count + '</span>' +
+              '<button class="exbtn" data-exh="' + esc(x.company) + '"' +
+                (x.count ? '' : ' disabled') + '>Print list</button>' +
+            '</div>';
+          }).join('') + '</div>' : '') +
+        '<div class="panel">' +
+          '<input class="search" id="ql" placeholder="Search leads\u2026" value="' + esc(q) + '">' +
+          '<div class="count">' + rows.length + ' of ' + all.length + ' leads</div>' +
+          '<div class="tblwrap"><table><thead><tr><th>Captured</th><th>Exhibitor</th><th>Delegate</th>' +
+          '<th>Institution</th><th>Email</th><th>Phone</th></tr></thead><tbody>' +
+          rows.map(function(l){
+            return '<tr><td class="mono">' + esc(l.at) + '</td>' +
+              '<td>' + esc(l.exhibitor) + '</td><td>' + esc(l.name) + '</td>' +
+              '<td class="muted">' + esc(l.inst) + '</td>' +
+              '<td class="muted">' + esc(l.email) + '</td>' +
+              '<td class="muted">' + esc(l.phone) + '</td></tr>';
+          }).join('') + '</tbody></table></div>' +
+          '<div class="actions"><button id="csvL">Download all as CSV</button>' +
+            '<button id="prAll">Print all leads</button></div>' +
+        '</div>';
+
+      $('ql').addEventListener('input', function(){ q = this.value.trim().toLowerCase(); body(); $('ql').focus(); });
+      $('csvL').addEventListener('click', function(){ csv('leads'); });
+      $('prAll').addEventListener('click', function(){ printLeads(all, 'All exhibitor leads'); });
+      b.querySelectorAll('[data-exh]').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          var name = this.dataset.exh;
+          printLeads(all.filter(function(l){ return l.exhibitor === name; }), 'Leads \u2014 ' + name);
+        });
+      });
+      return;
+    }
+
+    if (tab === 'questions'){
+      var qs = D.questions || [];
+      var pend = qs.filter(function(x){ return x.status === 'New'; });
+      var live = qs.filter(function(x){ return x.status === 'Approved'; });
+      var done = qs.filter(function(x){ return x.status === 'Answered'; });
+
+      var card = function(x){
+        var cls = x.status === 'New' ? 'wait' : x.status === 'Approved' ? 'acc'
+                : x.status === 'Answered' ? 'yes' : 'rej';
+        var who = [x.name, x.inst].filter(Boolean).join(', ');
+        return '<div class="qmod" data-row="' + x.row + '">' +
+          '<div class="qtop">' +
+            (x.session ? '<span class="pill acc">' + esc(x.session) + '</span>' : '') +
+            '<span class="pill ' + cls + '">' + esc(x.status) + '</span>' +
+            '<span class="qvotes">' + x.votes + ' vote' + (x.votes === 1 ? '' : 's') + '</span>' +
+            '<span class="qtime">' + esc(x.at) + '</span>' +
+          '</div>' +
+          '<div class="qtext">' + esc(x.q) + '</div>' +
+          (who ? '<div class="qwho">' + esc(who) + '</div>' : '') +
+          '<div class="qacts">' +
+            (x.status !== 'Approved' ? '<button data-act="Approved" data-row="' + x.row + '">Show it</button>' : '') +
+            (x.status === 'Approved' ? '<button data-act="Answered" data-row="' + x.row + '">Mark answered</button>' : '') +
+            (x.status !== 'Dismissed' ? '<button class="dim" data-act="Dismissed" data-row="' + x.row + '">Dismiss</button>' : '') +
+            (x.status === 'Dismissed' ? '<button data-act="New" data-row="' + x.row + '">Restore</button>' : '') +
+          '</div></div>';
+      };
+
+      b.innerHTML = '<div class="cards">' +
+          kpi('Waiting', pend.length, 'to review', pend.length ? 'amber' : '') +
+          kpi('Showing', live.length, 'on the screen', 'go') +
+          kpi('Answered', done.length) +
+        '</div>' +
+        (D.qaOpen ? '' : '<div class="panel"><p class="muted">Questions are currently closed. ' +
+          'Set <b>Questions open</b> to YES in the spreadsheet to let delegates ask.</p></div>') +
+        (qs.length
+          ? '<div class="panel"><h2>Questions</h2>' + qs.map(card).join('') + '</div>'
+          : '<div class="panel"><p class="muted">No questions yet.</p></div>');
+
+      b.querySelectorAll('[data-act]').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          var row = +this.dataset.row, act = this.dataset.act, el = this;
+          el.disabled = true; el.textContent = '\u2026';
+          fetch(API_URL, { method:'POST', headers:{ 'Content-Type':'text/plain;charset=utf-8' },
+                           body: JSON.stringify({ action:'moderate', token:token, row:row, status:act }) })
+            .then(function(r){ return r.json(); })
+            .then(function(res){
+              if (!res || !res.ok){ alert((res && res.error) || 'Could not save.'); el.disabled = false; return; }
+              var q = (D.questions||[]).filter(function(x){ return x.row === row; })[0];
+              if (q) q.status = act;
+              body();
+            })
+            .catch(function(){ alert('Could not reach the server.'); el.disabled = false; });
+        });
+      });
+      return;
+    }
+
     if (tab === 'attendance'){
       var days = D.byDay || {};
       var keys = Object.keys(days).sort();
@@ -2876,10 +3007,16 @@ var qrcode = function() {
       '.b-cat{display:inline-block;margin-top:2mm;font-size:6.5pt;font-weight:800;' +
         'text-transform:uppercase;letter-spacing:.08em;background:' + soft + ';color:' + brand + ';' +
         'padding:1.1mm 3mm;border-radius:99mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}' +
+      '.b-acc{display:inline-block;margin-top:2mm;margin-left:1.5mm;min-width:7mm;' +
+        'text-align:center;font-size:8pt;font-weight:800;letter-spacing:.04em;' +
+        'background:#0B1524;color:#fff;padding:1.1mm 2.4mm;border-radius:1.6mm;' +
+        '-webkit-print-color-adjust:exact;print-color-adjust:exact}' +
+      '.b-acc.w{background:#F59E0B;color:#2B1A00}' +
       '.b-qr{flex:0 0 25mm;text-align:center}' +
       '.b-qr svg{width:25mm;height:25mm;display:block;border:.4pt solid #e2e8f0;border-radius:2mm;padding:1mm}' +
       '.b-id{font-family:"IBM Plex Mono",monospace;font-size:5.6pt;letter-spacing:.09em;color:#8A9AAF;margin-top:.8mm}' +
-      '.b-foot{font-size:6pt;color:#8A9AAF;text-align:center;padding:0 5mm 2.6mm}' +
+      '.b-foot{font-size:6.2pt;color:#5A6B80;text-align:center;padding:0 4mm 2.2mm}' +
+      '.b-consent{font-size:4.6pt;color:#A8B4C4;line-height:1.25;margin-top:.7mm}' +
       '.ph{display:none}' +
       '@media screen{.sheet{max-width:204mm;margin:0 auto}}';
 
@@ -2909,12 +3046,20 @@ var qrcode = function() {
             '<div class="b-name' + (longName ? ' long' : '') + '">' + esc(d.name) + '</div>' +
             '<div class="b-inst">' + esc(d.inst) + '</div>' +
             (d.cat ? '<span class="b-cat">' + esc(d.cat) + '</span>' : '') +
+            // the access letter, so the door can read it without scanning
+            (d.access ? '<span class="b-acc' + (d.access === 'W' ? ' w' : '') + '">' +
+                        esc(d.access) + '</span>' : '') +
           '</div>' +
           '<div class="b-qr">' + (target ? qrSvg(target, 320) : '') +
             '<div class="b-id">' + esc(d.id || '') + '</div>' +
           '</div>' +
         '</div>' +
-        (foot.length ? '<div class="b-foot">' + esc(foot.join('  \u00b7  ')) + '</div>' : '') +
+        (foot.length || B.consent
+          ? '<div class="b-foot">' +
+            (foot.length ? esc(foot.join('  \u00b7  ')) : '') +
+            (B.consent ? '<div class="b-consent">' + esc(B.consent) + '</div>' : '') +
+            '</div>'
+          : '') +
       '</div>';
     }).join('') + '</div>';
 
@@ -2923,6 +3068,27 @@ var qrcode = function() {
     openPrint('Delegate badges', css, body);
   }
 
+
+  function printLeads(rows, title){
+    if (!rows.length){ alert('No leads to print.'); return; }
+    var css = 'table{width:100%;border-collapse:collapse;font-size:9pt}' +
+      'th{text-align:left;background:#f1f5f9;padding:6px 7px;border:1px solid #ccc;font-size:8pt;text-transform:uppercase}' +
+      'td{padding:5px 7px;border:1px solid #ddd}tr{page-break-inside:avoid}' +
+      '.tot{margin-top:12px;font-size:10pt;font-weight:700;text-align:right}' +
+      '.nb{margin-top:16px;font-size:8pt;color:#555;line-height:1.5;border-top:1px solid #ccc;padding-top:8px}';
+    var body = '<table><thead><tr><th style="width:24px">#</th><th>Delegate</th><th>Institution</th>' +
+      '<th>Category</th><th>Email</th><th>Phone</th><th>Captured</th></tr></thead><tbody>' +
+      rows.map(function(l,i){
+        return '<tr><td>' + (i+1) + '</td><td>' + esc(l.name) + '</td>' +
+          '<td>' + esc(l.inst) + '</td><td>' + esc(l.cat) + '</td>' +
+          '<td>' + esc(l.email) + '</td><td>' + esc(l.phone) + '</td>' +
+          '<td>' + esc(l.at) + '</td></tr>';
+      }).join('') + '</tbody></table>' +
+      '<div class="tot">' + rows.length + ' lead' + (rows.length === 1 ? '' : 's') + '</div>' +
+      '<div class="nb">These delegates consented to share their details by presenting their badge ' +
+      'at the stand. Please use them in line with the Nigeria Data Protection Act 2023.</div>';
+    openPrint(title, css, body);
+  }
 
   /* ── Book of Abstracts: accepted only, in programme order ── */
   function sessionRank(v){
@@ -3051,6 +3217,12 @@ var qrcode = function() {
         var r = [d.name, d.inst, d.cat, d.extras||'', d.rate||'', d.paid?'Yes':'No', d.method||''];
         if (has('contacts')) r = r.concat([d.email, d.phone]);
         rows.push(r.concat([d.ref, d.amount, d.days]));
+      });
+    } else if (which === 'leads'){
+      name = 'exhibitor-leads';
+      rows.push(['Captured','Exhibitor','Delegate','Institution','Category','Email','Phone','Note']);
+      (D.leads||[]).forEach(function(l){
+        rows.push([l.at, l.exhibitor, l.name, l.inst, l.cat, l.email, l.phone, l.note]);
       });
     } else {
       name = 'abstracts';

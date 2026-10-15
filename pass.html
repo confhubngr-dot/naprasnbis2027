@@ -51,6 +51,29 @@ body{background:#0B1524;min-height:100vh;display:flex;align-items:center;justify
   .card{box-shadow:none;border:1px solid var(--line)}
   .tip{display:none}
 }
+
+/* ── what this person is booked for ──────────────────────────────── */
+.acc{display:flex;align-items:center;gap:12px;margin:16px 0 0;
+     padding:13px 15px;border-radius:13px;background:#F3F6FB;border:1px solid #E2E8F0}
+.acc .ltr{flex:0 0 auto;width:44px;height:44px;border-radius:11px;display:flex;
+          align-items:center;justify-content:center;font-weight:800;font-size:1.18rem;
+          letter-spacing:.02em;color:#fff;background:#0B1524}
+.acc .ltr.w{background:#B45309}
+.acc .ltr.cw{background:#1E5C3A}
+.acc .txt{min-width:0;text-align:left}
+.acc .lab{display:block;font-size:.68rem;font-weight:800;letter-spacing:.12em;
+          text-transform:uppercase;color:#8A9AAF;margin-bottom:3px}
+.acc .val{display:block;font-weight:700;font-size:.95rem;line-height:1.3}
+.bk{margin-top:11px;text-align:left}
+.bk .lab{font-size:.68rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+         color:#8A9AAF;margin-bottom:6px}
+.bk ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.bk li{display:flex;gap:9px;font-size:.9rem;line-height:1.45;color:#2C3A4D}
+.bk li::before{content:"\2713";color:#10B981;font-weight:800;flex:0 0 auto}
+.applink{display:block;margin-top:14px;padding:13px;border-radius:12px;
+         background:#0B1524;color:#fff;text-decoration:none;font-weight:700;
+         font-size:.92rem;text-align:center}
+@media print{.applink{display:none}}
 </style>
 </head>
 <body>
@@ -2407,10 +2430,23 @@ var qrcode = function() {
       (d.c ? '<div class="cat">' + esc(d.c) + '</div>' : '') +
       '<div class="qrwrap"><div class="qrbox">' + img + '</div></div>' +
       '<div class="idline mono">' + esc(d.i) + '</div>' +
+
+      // What they are booked for. Older passes carry none of this, so
+      // every piece is written only when it is actually present.
+      (d.k ? '<div class="acc"><span class="ltr ' + esc(String(d.k).toLowerCase()) + '">' +
+             esc(d.k) + '</span><span class="txt">' +
+             '<span class="lab">Admits you to</span>' +
+             '<span class="val">' + esc(d.g || '') + '</span></span></div>' : '') +
+      ((d.b && d.b.length) ?
+        '<div class="bk"><div class="lab">Your booking</div><ul>' +
+        d.b.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') +
+        '</ul></div>' : '') +
       '<div class="tip"><b>Save this now.</b> Use your browser menu and choose ' +
         '&ldquo;Add to Home Screen&rdquo;. Your pass will then open instantly at the ' +
         'registration desk even with no network.</div>' +
     '</div>' +
+      // workshop-only attendees get no conference app link
+      (d.a ? '<a class="applink" href="' + esc(d.a) + '">Open the conference app</a>' : '') +
     '<div class="foot">Powered by <a href="https://confhub.ng">ConfHub.ng</a></div>';
 
   document.title = d.n ? d.n + ' — Delegate Pass' : 'Delegate Pass';
