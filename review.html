@@ -15,7 +15,7 @@
    THE ONLY LINE YOU EVER EDIT
    Paste the /exec URL for this event's Apps Script deployment.
    ═══════════════════════════════════════════════════════════════ */
-const API_URL = "https://script.google.com/macros/s/AKfycbzuXOOzdEVNdM9Lj5G18eFXFK0RU9yklZSFZ_rYFyGg_FEE8VaU0mu2B3cEbdqnjLZm/exec";
+const API_URL = "PASTE_YOUR_EXEC_URL_HERE";
 </script>
 
 <style>
@@ -98,6 +98,69 @@ body{font-family:"Plus Jakarta Sans",-apple-system,BlinkMacSystemFont,"Segoe UI"
         padding:15px 18px;margin-bottom:14px;font-size:.87rem;color:var(--slate);line-height:1.55}
 .themes b{display:block;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;
           color:var(--mist);font-weight:800;margin-bottom:6px}
+
+/* ═══════════════════════════════════════════════════════════════════
+   LITE SHELL — for the pages people work in rather than browse.
+   Masthead, a compact brand band and the footer, so these look part of
+   the same event. Deliberately no sub-navigation: a reviewer is not a
+   delegate, and the dashboard already has tabs of its own.
+   ═══════════════════════════════════════════════════════════════════ */
+.lmast{background:#fff;border-bottom:1px solid var(--line)}
+.lmast .in{max-width:1180px;margin:0 auto;padding:11px 20px;
+           display:flex;align-items:center;gap:14px}
+.lmast .marks{display:flex;align-items:center;gap:9px;flex:0 0 auto}
+.lmast .marks img{height:36px;width:auto;max-width:72px;object-fit:contain}
+.lmast .who{min-width:0;flex:1}
+.lmast .nm{font-weight:800;font-size:.9rem;letter-spacing:-.015em;line-height:1.25;
+           overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lmast .dt{font-size:.73rem;color:var(--mist);font-weight:600;
+           overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:620px){
+  .lmast .in{padding:10px 16px;gap:11px}
+  .lmast .marks img{height:30px;max-width:58px}
+}
+
+/* the band: same photo and overlay as the public pages, a third of the height */
+.lband{position:relative;background:var(--grad);color:#fff;overflow:hidden;isolation:isolate}
+.lband .shot{position:absolute;inset:0;background-size:cover;background-position:center;z-index:-2}
+.lband .veil{position:absolute;inset:0;z-index:-1}
+.lband .in{max-width:1180px;margin:0 auto;padding:26px 20px 24px;position:relative;
+           display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap}
+.lband .kick{font-size:.68rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+             opacity:.9;margin-bottom:7px}
+.lband h1{font-size:clamp(1.18rem,2.4vw,1.6rem);font-weight:800;letter-spacing:-.025em;
+          line-height:1.2;max-width:28ch;text-wrap:balance}
+.lband .sub{margin-top:7px;font-size:.86rem;opacity:.93}
+.lband .me{flex:0 0 auto;text-align:right;font-size:.85rem;opacity:.95;line-height:1.4}
+.lband .me b{display:block;font-weight:800;font-size:.95rem}
+@media(max-width:620px){
+  .lband .in{padding:20px 16px 19px}
+  .lband .me{text-align:left}
+}
+
+.lfoot{background:var(--ink);color:rgba(255,255,255,.62);margin-top:36px}
+.lfoot .in{max-width:1180px;margin:0 auto;padding:22px 20px 26px;font-size:.81rem;
+           display:flex;flex-wrap:wrap;gap:10px 28px;align-items:center;
+           justify-content:space-between}
+.lfoot b{color:#fff;font-weight:700}
+.lfoot a{color:#fff;text-decoration:none;font-weight:600}
+@media print{ .lmast,.lband,.lfoot{display:none} }
+/* the lite shell runs edge to edge; the content keeps its own width */
+body.lshell{padding:0}
+body.lshell{display:flex;flex-direction:column;min-height:100vh}
+body.lshell .lwrap{flex:1 0 auto}
+body.lshell .lfoot{flex:0 0 auto}
+body.lshell .wrap{max-width:none}
+.lwrap{max-width:720px;margin:0 auto;padding:26px 20px 0}
+
+/* the band above carries the brand colour, so the progress card is quiet */
+.head.plain{background:#fff;color:var(--ink);border:1px solid var(--line);
+            box-shadow:none;border-radius:16px}
+.head.plain h1{font-size:1.2rem;margin-bottom:4px}
+.head.plain .meta{color:var(--slate);opacity:1}
+.head.plain .progress{background:var(--line)}
+.head.plain .progress i{background:var(--brand)}
+.head.plain .pnum{color:var(--mist)}
 </style>
 </head>
 <body>
@@ -116,6 +179,72 @@ body{font-family:"Plus Jakarta Sans",-apple-system,BlinkMacSystemFont,"Segoe UI"
     });
   }
   function $(id){ return document.getElementById(id); }
+
+  /* ── LITE SHELL ────────────────────────────────────────────────
+     Shared by review.html and dashboard.html. Masthead, compact band,
+     footer. Every piece hides itself when its setting is blank.
+     ────────────────────────────────────────────────────────────── */
+  function liteEsc(s){
+    return String(s==null?'':s).replace(/[&<>"]/g,function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];
+    });
+  }
+
+  function liteChrome(d, kicker, title, mePrefix){
+    document.body.className = 'lshell';
+    var S = (d && d.shell) || {};
+    var logos = (d && d.logos) || [];
+
+    var marks = logos.length
+      ? '<div class="marks">' + logos.map(function(u){
+          return '<img src="' + liteEsc(u) + '" alt="" loading="lazy">';
+        }).join('') + '</div>'
+      : '';
+
+    // the same photo and darkening the public pages use, so these match
+    var shot = '', veil = '';
+    if (S.hero){
+      var a = (S.overlay == null ? 55 : S.overlay) / 100;
+      shot = '<div class="shot" style="background-image:url(\'' + liteEsc(S.hero) + '\')"></div>';
+      veil = '<div class="veil" style="background:linear-gradient(130deg,' +
+             'rgba(0,0,0,' + (a + 0.12).toFixed(2) + '),rgba(0,0,0,' + a.toFixed(2) + '))"></div>';
+    }
+
+    var who = (d && d.name) || (d && d.reviewer) || '';
+    var role = (d && d.role) || '';
+
+    return '<header class="lmast"><div class="in">' + marks +
+        '<div class="who">' +
+          '<div class="nm">' + liteEsc((d && d.event) || '') + '</div>' +
+          '<div class="dt">' + liteEsc((d && d.dates) || '') +
+            ((d && d.venue) ? ' · ' + liteEsc(d.venue) : '') + '</div>' +
+        '</div>' +
+      '</div></header>' +
+      '<section class="lband">' + shot + veil + '<div class="in">' +
+        '<div>' +
+          '<div class="kick">' + liteEsc(kicker) + '</div>' +
+          '<h1>' + liteEsc(title || (d && d.event) || '') + '</h1>' +
+          (S.tagline ? '<div class="sub">' + liteEsc(S.tagline) + '</div>' : '') +
+        '</div>' +
+        (who ? '<div class="me">' + liteEsc(mePrefix || 'Signed in as') +
+               '<b>' + liteEsc(who) + '</b>' +
+               (role ? liteEsc(role) : '') + '</div>' : '') +
+      '</div></section>';
+  }
+
+  function liteFoot(d){
+    var S = (d && d.shell) || {};
+    return '<footer class="lfoot"><div class="in">' +
+        '<div><b>' + liteEsc((d && d.event) || '') + '</b> ' +
+          liteEsc((d && d.dates) || '') + '</div>' +
+        '<div>Conference platform by ' +
+          '<a href="https://confhub.ng" target="_blank" rel="noopener">ConfHub</a>' +
+          (S.email ? ' · <a href="mailto:' + liteEsc(S.email) + '">' +
+                     liteEsc(S.email) + '</a>' : '') +
+        '</div>' +
+      '</div></footer>';
+  }
+
   function state(html, diag){
     root.innerHTML = '<div class="state">' + html +
       (diag ? '<div class="diag"><b>For the organiser:</b><br>' + esc(diag) + '</div>' : '') + '</div>';
@@ -199,14 +328,12 @@ body{font-family:"Plus Jakarta Sans",-apple-system,BlinkMacSystemFont,"Segoe UI"
         }).join('') + '</div>' : '';
 
     root.innerHTML =
-      logos +
-      '<div class="head">' +
-        '<div class="kick">' + (isAdj ? 'Adjudication' : 'Abstract review') + '</div>' +
-        '<h1>' + esc(data.event) + '</h1>' +
-        (data.dates ? '<div class="meta">' + esc(data.dates) +
-          (data.venue ? ' &middot; ' + esc(data.venue) : '') + '</div>' : '') +
-        '<div class="meta" style="margin-top:6px">Reviewing as ' + esc(data.reviewer) +
-          (data.due ? ' &middot; please complete by ' + esc(data.due) : '') + '</div>' +
+      liteChrome(data, isAdj ? 'Adjudication' : 'Abstract review',
+                 data.event, 'Reviewing as') +
+      '<div class="lwrap">' +
+      '<div class="head plain">' +
+        '<h1>Your abstracts</h1>' +
+        (data.due ? '<div class="meta">Please complete by ' + esc(data.due) + '</div>' : '') +
         '<div class="progress"><i style="width:' + pct + '%"></i></div>' +
         '<div class="pnum">' + c.done + ' of ' + c.total + ' reviewed</div>' +
       '</div>' +
@@ -224,7 +351,7 @@ body{font-family:"Plus Jakarta Sans",-apple-system,BlinkMacSystemFont,"Segoe UI"
       '</div>' +
 
       '<div id="list"></div>' +
-      '<p class="foot">Powered by <a href="https://confhub.ng">ConfHub.ng</a></p>';
+      '</div>' + liteFoot(data);
 
     $('fTodo').addEventListener('click', function(){ filter='todo'; draw(); });
     $('fDone').addEventListener('click', function(){ filter='done'; draw(); });
