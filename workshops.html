@@ -472,6 +472,7 @@ input:focus,select:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0
      'current' is the one we are on. */
   function navItems(current){
     var L = (cfg && cfg.links) || {}, S = sh(), out = [];
+    if (L.home)      out.push({ k:'home',      t:'Home',         href:L.home });
     if (L.site)      out.push({ k:'site',      t:'Association',  href:L.site });
     if (L.register)  out.push({ k:'register',  t:'Registration', href:L.register,
                                 shut: !L.registrationOpen });
@@ -482,7 +483,15 @@ input:focus,select:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0
     if (S.programme) out.push({ k:'programme', t:'Programme',    href:S.programme });
     if (S.venueLink) out.push({ k:'venue',     t:'Venue',        href:S.venueLink });
     if (L.app)       out.push({ k:'app',       t:'Conference app', href:L.app });
-    return out;
+
+    // Two settings can legitimately hold the same address - the event home
+    // and the association site, say. Show that destination once.
+    var seen = {};
+    return out.filter(function(i){
+      var key = String(i.href||'').replace(/\/+$/,'').toLowerCase();
+      if (!key || seen[key]) return false;
+      seen[key] = 1; return true;
+    });
   }
 
   function masthead(current){

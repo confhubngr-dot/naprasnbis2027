@@ -222,7 +222,7 @@ body.shelled .wrap{max-width:none}
 .site{min-height:100vh;display:flex;flex-direction:column}
 
 /* ── sticky masthead ── */
-.topbar{position:sticky;top:0;z-index:50}
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:50}
 .mast{background:rgba(255,255,255,.96);
       backdrop-filter:saturate(1.6) blur(12px);border-bottom:1px solid var(--line)}
 .mast .in{max-width:1120px;margin:0 auto;padding:11px 20px;
@@ -318,7 +318,8 @@ body.shelled .wrap{max-width:none}
 @media(max-width:620px){.panel{padding:22px 19px 26px;border-radius:15px}}
 
 /* sidebar */
-.side{display:flex;flex-direction:column;gap:14px;position:sticky;top:112px}
+.side{display:flex;flex-direction:column;gap:14px;position:sticky;
+      top:calc(112px + env(safe-area-inset-top,0px))}
 @media(max-width:940px){.side{position:static;top:auto}}
 .box{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:19px 20px}
 .box h3{font-size:.69rem;font-weight:800;letter-spacing:.13em;text-transform:uppercase;
@@ -364,7 +365,7 @@ body.shelled .wrap{max-width:none}
 .sitefoot .brandline a{color:#fff}
 
 /* ── floating WhatsApp ── */
-.wa{position:fixed;right:17px;bottom:17px;z-index:60;width:53px;height:53px;border-radius:50%;
+.wa{position:fixed;right:17px;bottom:calc(17px + env(safe-area-inset-bottom,0px));z-index:60;width:53px;height:53px;border-radius:50%;
     background:#25D366;display:flex;align-items:center;justify-content:center;
     box-shadow:0 8px 22px rgba(0,0,0,.26);text-decoration:none}
 .wa:hover{transform:scale(1.06)}
@@ -414,15 +415,26 @@ body.shelled .wrap{max-width:none}
      'current' is the one we are on. */
   function navItems(current){
     var L = (cfg && cfg.links) || {}, S = sh(), out = [];
+    if (L.home)      out.push({ k:'home',      t:'Home',         href:L.home });
     if (L.site)      out.push({ k:'site',      t:'Association',  href:L.site });
     if (L.register)  out.push({ k:'register',  t:'Registration', href:L.register,
                                 shut: !L.registrationOpen });
     if (L.abstracts) out.push({ k:'abstracts', t:'Abstracts',    href:L.abstracts,
                                 shut: !L.abstractsOpen });
+    if (L.workshops && L.workshopsOpen)
+                     out.push({ k:'workshops', t:'Workshops',    href:L.workshops });
     if (S.programme) out.push({ k:'programme', t:'Programme',    href:S.programme });
     if (S.venueLink) out.push({ k:'venue',     t:'Venue',        href:S.venueLink });
     if (L.app)       out.push({ k:'app',       t:'Conference app', href:L.app });
-    return out;
+
+    // Two settings can legitimately hold the same address - the event home
+    // and the association site, say. Show that destination once.
+    var seen = {};
+    return out.filter(function(i){
+      var key = String(i.href||'').replace(/\/+$/,'').toLowerCase();
+      if (!key || seen[key]) return false;
+      seen[key] = 1; return true;
+    });
   }
 
   function masthead(current){
@@ -688,7 +700,17 @@ body.shelled .wrap{max-width:none}
   if (frag.indexOf('edit=') === 0) editToken = frag.slice(5);
 
   if (!API_URL || API_URL.indexOf('PASTE') === 0){
-    state('<h1>Not configured yet</h1><p>The API URL has not been set in this page.</p>');
+    state('<h1>Not configured yet</h1>' +
+          '<p>This page has not been connected to its spreadsheet yet.</p>' +
+          '<div class="diag"><b>For the organiser:</b><br>' +
+          'Near the top of <span class="mono">abstracts.html</span> (line 33) this line still ' +
+          'has the placeholder in it:<br><br>' +
+          '<span class="mono">const API_URL = "PASTE_YOUR_EXEC_URL_HERE";</span>' +
+          '<br><br>Replace the placeholder with your Web App address, which ends in ' +
+          '<span class="mono">/exec</span>. Apps Script → Deploy → Manage deployments ' +
+          '→ copy the Web app URL. Commit the file, then give Cloudflare a minute.' +
+          '<br><br>Every fresh copy of this file ships with that line blanked, so it has to be ' +
+          'set again each time you replace the page.</div>');
     return;
   }
 
